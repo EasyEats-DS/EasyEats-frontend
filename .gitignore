@@ -20,6 +20,8 @@ pnpm-debug.log*
 # IDE/editor settings
 .vscode/
 .idea/
+*.iml
+*.iws
 *.sublime-workspace
 *.sublime-project
 
