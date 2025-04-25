@@ -2,6 +2,86 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
+  const cards = [
+    {
+      title: "Browse Restaurants",
+      description: "Explore our partner restaurants",
+      link: "/restaurant",
+      colorClass: "border-orange-500",
+      buttonClass: "bg-orange-500 hover:bg-orange-600",
+      iconColorClass: "text-orange-500",
+      svgPath:
+        "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+      buttonText: "Order Now",
+    },
+    {
+      title: "Your Cart",
+      description: "Review your selected items",
+      link: "/cart",
+      colorClass: "border-green-500",
+      buttonClass: "bg-green-500 hover:bg-green-600",
+      iconColorClass: "text-green-500",
+      svgPath:
+        "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
+      buttonText: "View Cart",
+    },
+    {
+      title: "Your Orders",
+      description: "Track your food delivery",
+      link: "/order",
+      colorClass: "border-blue-500",
+      buttonClass: "bg-blue-500 hover:bg-blue-600",
+      iconColorClass: "text-blue-500",
+      svgPath:
+        "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
+      buttonText: "Track Order",
+    },
+    {
+      title: "Login",
+      description: "Access your account",
+      link: "/login",
+      colorClass: "border-yellow-500",
+      buttonClass: "bg-yellow-500 hover:bg-yellow-600",
+      iconColorClass: "text-yellow-500",
+      svgPath:
+        "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+      buttonText: "Sign In",
+    },
+    {
+      title: "Sign Up",
+      description: "Create a new account",
+      link: "/signup",
+      colorClass: "border-purple-500",
+      buttonClass: "bg-purple-500 hover:bg-purple-600",
+      iconColorClass: "text-purple-500",
+      svgPath:
+        "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z",
+      buttonText: "Join Now",
+    },
+    {
+      title: "Admin Dashboard",
+      description: "Manage system settings",
+      link: "/dashboard",
+      colorClass: "border-indigo-500",
+      buttonClass: "bg-indigo-500 hover:bg-indigo-600",
+      iconColorClass: "text-indigo-500",
+      svgPath:
+        "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
+      buttonText: "Access",
+    },
+    {
+      title: "Payment",
+      description: "Manage and complete your payments",
+      link: "/payment",
+      colorClass: "border-teal-500",
+      buttonClass: "bg-teal-500 hover:bg-teal-600",
+      iconColorClass: "text-teal-500",
+      svgPath:
+        "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+      buttonText: "Pay Now",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Hero Section */}
@@ -29,88 +109,10 @@ const Home = () => {
 
         {/* Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Card Template */}
-          {[
-            {
-              title: "Browse Restaurants",
-              description: "Explore our partner restaurants",
-              link: "/restaurant",
-              color: "orange-500",
-              hoverColor: "orange-600",
-              svgPath:
-                "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-              buttonText: "Order Now",
-            },
-            {
-              title: "Your Cart",
-              description: "Review your selected items",
-              link: "/cart",
-              color: "green-500",
-              hoverColor: "green-600",
-              svgPath:
-                "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z",
-              buttonText: "View Cart",
-            },
-            {
-              title: "Your Orders",
-              description: "Track your food delivery",
-              link: "/order",
-              color: "blue-500",
-              hoverColor: "blue-600",
-              svgPath:
-                "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
-              buttonText: "Track Order",
-            },
-            {
-              title: "Login",
-              description: "Access your account",
-              link: "/login",
-              color: "yellow-500",
-              hoverColor: "yellow-600",
-              svgPath:
-                "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
-              buttonText: "Sign In",
-            },
-            {
-              title: "Sign Up",
-              description: "Create a new account",
-              link: "/signup",
-              color: "purple-500",
-              hoverColor: "purple-600",
-              svgPath:
-                "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z",
-              buttonText: "Join Now",
-            },
-            {
-              title: "Admin Dashboard",
-              description: "Manage system settings",
-              link: "/dashboard",
-              color: "indigo-500",
-              hoverColor: "indigo-600",
-              svgPath:
-                "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
-              buttonText: "Access",
-            },
-            {
-              title: "Payment",
-              description: "Manage and complete your payments",
-              link: "/payment",
-              color: "teal-500",
-              hoverColor: "teal-600",
-              svgPath:
-                "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-              buttonText: "Pay Now",
-            },
-          ].map((card, idx) => (
-            <Link
-              key={idx}
-              to={card.link}
-              className="transform hover:scale-105 transition duration-300"
-            >
-              <div
-                className={`bg-white rounded-2xl shadow-md hover:shadow-2xl p-8 text-center border-t-4 border-${card.color}`}
-              >
-                <div className={`text-${card.color} mb-5`}>
+          {cards.map((card, idx) => (
+            <Link key={idx} to={card.link} className="transform hover:scale-105 transition duration-300">
+              <div className={`bg-white rounded-2xl shadow-md hover:shadow-2xl p-8 text-center ${card.colorClass}`}>
+                <div className={`${card.iconColorClass} mb-5`}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-12 w-12 mx-auto"
@@ -118,19 +120,12 @@ const Home = () => {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={card.svgPath}
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.svgPath} />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-semibold text-gray-800 mb-2">{card.title}</h3>
                 <p className="text-gray-600 mb-4">{card.description}</p>
-                <button
-                  className={`bg-${card.color} hover:bg-${card.hoverColor} text-white font-medium py-2 px-6 rounded-full transition-all duration-300`}
-                >
+                <button className={`${card.buttonClass} text-white font-medium py-2 px-6 rounded-full transition-all duration-300`}>
                   {card.buttonText}
                 </button>
               </div>
