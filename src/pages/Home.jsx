@@ -6,7 +6,7 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-orange-500 to-red-600 shadow-md">
-        <h1 className="text-3xl font-bold text-white p-6 text-center">Welcome to FoodExpress</h1>
+        <h1 className="text-3xl font-bold text-white p-6 text-center">Welcome to EasyEats</h1>
       </header>
 
       {/* Main Content */}
