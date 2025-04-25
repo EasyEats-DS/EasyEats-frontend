@@ -7,7 +7,7 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Order from "./pages/Order"; 
 import AdminDashboard from "./pages/AdminDashboard";
-
+import Payment from "./pages/Payment";
 
 const App = () => {
   return (
@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/order" element={<Order/>} />
         <Route path="/dashboard" element={<AdminDashboard/>} />
-        
+        <Route path="/payment" element={<Payment/>} />
       </Routes>
     </BrowserRouter>
   );
