@@ -52,13 +52,13 @@ const Order = () => {
           <input
             value={deliveryAddress}
             onChange={(e) => setDeliveryAddress(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-4"
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
             placeholder="Enter delivery address"
           />
           <input
             value={dropNote}
             onChange={(e) => setDropNote(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             placeholder="Drop-off note (optional)"
           />
         </div>
@@ -77,7 +77,9 @@ const Order = () => {
             <label
               key={opt.value}
               className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer mt-3 ${
-                deliveryType === opt.value ? "border-black" : "border-gray-300"
+                deliveryType === opt.value
+                  ? "border-orange-500 bg-orange-50"
+                  : "border-gray-300"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -87,7 +89,7 @@ const Order = () => {
                   value={opt.value}
                   checked={deliveryType === opt.value}
                   onChange={(e) => setDeliveryType(e.target.value)}
-                  className="accent-black"
+                  className="accent-orange-500"
                 />
                 <span className="font-medium text-gray-800">{opt.label}</span>
               </div>
@@ -97,48 +99,59 @@ const Order = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-6">
-  <h2 className="text-2xl font-bold mb-6 text-gray-800">Payment Method</h2>
-  <div className="space-y-4">
-    <label
-      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
-        paymentMethod === "cash" ? "border-black bg-gray-50" : "border-gray-300"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <input
-          type="radio"
-          name="payment"
-          value="cash"
-          checked={paymentMethod === "cash"}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          className="accent-black w-5 h-5"
-        />
-        <span className="font-medium text-gray-700">Cash on Delivery</span>
-      </div>
-      <span className="text-sm text-gray-500">Pay in cash when food arrives</span>
-    </label>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">
+            Payment Method
+          </h2>
+          <div className="space-y-4">
+            <label
+              className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+                paymentMethod === "cash"
+                  ? "border-orange-500 bg-orange-50"
+                  : "border-gray-300"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cash"
+                  checked={paymentMethod === "cash"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="accent-orange-500 w-5 h-5"
+                />
+                <span className="font-medium text-gray-700">
+                  Cash on Delivery
+                </span>
+              </div>
+              <span className="text-sm text-gray-500">
+                Pay in cash when food arrives
+              </span>
+            </label>
 
-    <label
-      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
-        paymentMethod === "card" ? "border-black bg-gray-50" : "border-gray-300"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <input
-          type="radio"
-          name="payment"
-          value="card"
-          checked={paymentMethod === "card"}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          className="accent-black w-5 h-5"
-        />
-        <span className="font-medium text-gray-700">Card Payment</span>
-      </div>
-      <span className="text-sm text-gray-500">Pay securely with your card</span>
-    </label>
-  </div>
-</div>
-
+            <label
+              className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+                paymentMethod === "card"
+                  ? "border-orange-500 bg-orange-50"
+                  : "border-gray-300"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="card"
+                  checked={paymentMethod === "card"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="accent-orange-500 w-5 h-5"
+                />
+                <span className="font-medium text-gray-700">Card Payment</span>
+              </div>
+              <span className="text-sm text-gray-500">
+                Pay securely with your card
+              </span>
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* Right: Order Summary */}
@@ -184,7 +197,7 @@ const Order = () => {
 
         <button
           onClick={handlePlaceOrder}
-          className="w-full mt-6 bg-black hover:bg-gray-900 text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300"
+          className="w-full mt-6 bg-orange-500 hover:bg-orange-400 text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300"
         >
           Place Order
         </button>

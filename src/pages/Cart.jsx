@@ -124,7 +124,7 @@ const Cart = () => {
       <div className="mt-8">
         <textarea
           placeholder="Add an order note..."
-          className="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
           rows="3"
         />
       </div>
@@ -143,7 +143,7 @@ const Cart = () => {
       {/* Checkout Button */}
       <button
         onClick={handleCheckout}
-        className="w-full mt-8 bg-black text-white py-4 rounded-xl text-lg font-semibold transform hover:scale-105 hover:shadow-lg transition-all duration-300 hover:bg-gray-800"
+        className="w-full mt-8 bg-orange-500 text-white py-4 rounded-xl text-lg font-semibold transform hover:scale-105 hover:shadow-lg transition-all duration-300 hover:bg-orange-400"
         disabled={cartItems.length === 0}
       >
         Go to Checkout
