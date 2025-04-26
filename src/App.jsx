@@ -13,6 +13,8 @@ import Profile from "./pages/Profile";
 import Search from "./pages/SearchDishes";
 import AdminDashboard from "./pages/AdminDashboard";
 
+import OrderConfirmed from "./pages/OrderConfirmed";
+import Notification from "./pages/Notification";
 
 const App = () => {
   return (
@@ -35,6 +37,8 @@ const App = () => {
 
 
 
+        <Route path="/orderConfirmed" element={<OrderConfirmed />} />
+        <Route path="/notification" element={<Notification />}/> 
       </Routes>
     </BrowserRouter>
   );
