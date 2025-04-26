@@ -17,7 +17,10 @@ const Cart = () => {
   ]);
 
   const promotion = 133.85;
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
 
   const handleCheckout = () => {
     navigate("/order", {
@@ -59,7 +62,9 @@ const Cart = () => {
         />
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Caravan Fresh</h1>
-          <p className="text-gray-500 text-sm">No. 314B, Kaduwela Road, Koswatta</p>
+          <p className="text-gray-500 text-sm">
+            No. 314B, Kaduwela Road, Koswatta
+          </p>
         </div>
       </div>
 
@@ -79,7 +84,9 @@ const Cart = () => {
                 />
                 <div>
                   <h2 className="font-semibold text-gray-800">{item.name}</h2>
-                  <p className="text-gray-500 text-sm">LKR {item.price.toFixed(2)}</p>
+                  <p className="text-gray-500 text-sm">
+                    LKR {item.price.toFixed(2)}
+                  </p>
                 </div>
               </div>
 
@@ -90,7 +97,9 @@ const Cart = () => {
                 >
                   −
                 </button>
-                <span className="min-w-[20px] text-center">{item.quantity}</span>
+                <span className="min-w-[20px] text-center">
+                  {item.quantity}
+                </span>
                 <button
                   onClick={() => increaseQty(index)}
                   className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 text-xl"
@@ -134,7 +143,7 @@ const Cart = () => {
       {/* Checkout Button */}
       <button
         onClick={handleCheckout}
-        className="w-full mt-8 bg-black text-white py-4 rounded-xl text-lg font-semibold hover:bg-gray-800 transition-all"
+        className="w-full mt-8 bg-black text-white py-4 rounded-xl text-lg font-semibold transform hover:scale-105 hover:shadow-lg transition-all duration-300 hover:bg-gray-800"
         disabled={cartItems.length === 0}
       >
         Go to Checkout
