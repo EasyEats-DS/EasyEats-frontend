@@ -6,8 +6,12 @@ import Resturant from "./pages/Restaurant";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Order from "./pages/Order"; 
-import AdminDashboard from "./pages/AdminDashboard";
 import Payment from "./pages/Payment";
+import ForgetPassword from "./pages/ForgetPassword";
+import ResturantDetails from "./pages/ResturantDetails";
+import Profile from "./pages/Profile";
+import Search from "./pages/SearchDishes";
+
 
 const App = () => {
   return (
@@ -19,8 +23,16 @@ const App = () => {
         <Route path="/login" element={<Login/>} />
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/order" element={<Order/>} />
-        <Route path="/dashboard" element={<AdminDashboard/>} />
         <Route path="/payment" element={<Payment/>} />
+        <Route path="/forgot-password" element={<ForgetPassword/>} />
+        <Route path="/restaurant/:id" element={<ResturantDetails/>}/>
+        <Route path="/profile" element={<Profile/>} />
+        <Route path="/search" element={<Search/>} />  
+
+
+
+
+
       </Routes>
     </BrowserRouter>
   );
