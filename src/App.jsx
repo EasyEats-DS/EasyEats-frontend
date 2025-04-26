@@ -11,9 +11,14 @@ import ForgetPassword from "./pages/ForgetPassword";
 import ResturantDetails from "./pages/ResturantDetails";
 import Profile from "./pages/Profile";
 import Search from "./pages/SearchDishes";
-import AdminDashboard from "./pages/AdminDashboard";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import Notification from "./pages/Notification";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminMenu from "./pages/Admin/AdminMenu";
+import AdminOrders from "./pages/Admin/AdminOrders";
+import AdminEarnings from "./pages/Admin/AdminEarnings";
+import AdminSettings from "./pages/Admin/AdminSettings";
+import AdminProfile from "./pages/Admin/AdminProfile";
 
 const App = () => {
   return (
@@ -30,9 +35,14 @@ const App = () => {
         <Route path="/restaurant/:id" element={<ResturantDetails />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/orderConfirmed" element={<OrderConfirmed />} />
         <Route path="/notification" element={<Notification />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
+        <Route path="/admin/menu" element={<AdminMenu/>} />
+        <Route path="/admin/orders" element={<AdminOrders/>} />
+        <Route path="/admin/earnings" element={<AdminEarnings/>} />
+        <Route path="/admin/settings" element={<AdminSettings/>} />
+        <Route path="/admin/profile" element={<AdminProfile/>} />
       </Routes>
     </BrowserRouter>
   );

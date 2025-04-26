@@ -61,7 +61,7 @@ const Home = () => {
     {
       title: "Admin Dashboard",
       description: "Manage system settings",
-      link: "/dashboard",
+      link: "/admin/dashboard",
       colorClass: "border-indigo-500",
       buttonClass: "bg-indigo-500 hover:bg-indigo-600",
       iconColorClass: "text-indigo-500",
