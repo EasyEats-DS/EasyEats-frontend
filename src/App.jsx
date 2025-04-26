@@ -11,6 +11,7 @@ import ForgetPassword from "./pages/ForgetPassword";
 import ResturantDetails from "./pages/ResturantDetails";
 import Profile from "./pages/Profile";
 import Search from "./pages/SearchDishes";
+import AdminDashboard from "./pages/AdminDashboard";
 
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/restaurant/:id" element={<ResturantDetails/>}/>
         <Route path="/profile" element={<Profile/>} />
         <Route path="/search" element={<Search/>} />  
+        <Route path="/dashboard" element={<AdminDashboard/>} />
 
 
 
