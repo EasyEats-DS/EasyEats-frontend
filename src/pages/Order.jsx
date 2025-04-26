@@ -98,16 +98,48 @@ const Order = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">Payment Method</h2>
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <option value="cash">Cash on Delivery</option>
-            <option value="card">Card Payment</option>
-          </select>
-        </div>
+  <h2 className="text-2xl font-bold mb-6 text-gray-800">Payment Method</h2>
+  <div className="space-y-4">
+    <label
+      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+        paymentMethod === "cash" ? "border-black bg-gray-50" : "border-gray-300"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <input
+          type="radio"
+          name="payment"
+          value="cash"
+          checked={paymentMethod === "cash"}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="accent-black w-5 h-5"
+        />
+        <span className="font-medium text-gray-700">Cash on Delivery</span>
+      </div>
+      <span className="text-sm text-gray-500">Pay in cash when food arrives</span>
+    </label>
+
+    <label
+      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+        paymentMethod === "card" ? "border-black bg-gray-50" : "border-gray-300"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <input
+          type="radio"
+          name="payment"
+          value="card"
+          checked={paymentMethod === "card"}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="accent-black w-5 h-5"
+        />
+        <span className="font-medium text-gray-700">Card Payment</span>
+      </div>
+      <span className="text-sm text-gray-500">Pay securely with your card</span>
+    </label>
+  </div>
+</div>
+
       </div>
 
       {/* Right: Order Summary */}
