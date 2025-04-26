@@ -7,88 +7,102 @@ const Order = () => {
 
   const { cartItems = [], promotion = 0, note = "" } = location.state || {};
 
-  const [deliveryAddress, setDeliveryAddress] = useState("SLIIT Campus, Malabe");
-  const [dropNote, setDropNote] = useState("Near Perera and Sons in front of SLIIT");
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    "SLIIT Campus, Malabe"
+  );
+  const [dropNote, setDropNote] = useState(
+    "Near Perera and Sons in front of SLIIT"
+  );
   const [deliveryType, setDeliveryType] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const deliveryFee = deliveryType === "priority" ? 129 : 99;
   const taxes = 62.07;
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
   const total = subtotal - promotion + deliveryFee + taxes;
 
   const handlePlaceOrder = () => {
     const orderPayload = {
-      userId: "user123", 
-      products: cartItems.map(item => ({
+      userId: "user123",
+      products: cartItems.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
       })),
       deliveryAddress,
       dropNote,
       deliveryType,
       paymentMethod,
       totalAmount: total,
-      note
+      note,
     };
 
-    // Simulate POST
     console.log("Order Placed:", orderPayload);
     alert("Order placed successfully!");
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-8">
+    <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
       {/* Left: Delivery Info */}
-      <div className="flex-1 space-y-6">
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-xl font-bold mb-4">Delivery Details</h2>
+      <div className="flex-1 space-y-8">
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <h2 className="text-2xl font-bold mb-6">Delivery Details</h2>
           <input
             value={deliveryAddress}
-            onChange={e => setDeliveryAddress(e.target.value)}
-            className="w-full p-3 border rounded mb-4"
+            onChange={(e) => setDeliveryAddress(e.target.value)}
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black mb-4"
+            placeholder="Enter delivery address"
           />
           <input
             value={dropNote}
-            onChange={e => setDropNote(e.target.value)}
-            className="w-full p-3 border rounded"
-            placeholder="e.g. Meet outside"
+            onChange={(e) => setDropNote(e.target.value)}
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            placeholder="Drop-off note (optional)"
           />
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-xl font-bold mb-4">Delivery Options</h2>
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <h2 className="text-2xl font-bold mb-6">Delivery Options</h2>
           {[
-            { label: "Priority", value: "priority", note: "10–25 min (+LKR 129)" },
+            {
+              label: "Priority",
+              value: "priority",
+              note: "10–25 min (+LKR 129)",
+            },
             { label: "Standard", value: "standard", note: "15–30 min" },
-            { label: "Schedule", value: "schedule", note: "Choose time" }
-          ].map(opt => (
+            { label: "Schedule", value: "schedule", note: "Choose time" },
+          ].map((opt) => (
             <label
               key={opt.value}
-              className={`block p-3 rounded-lg border mt-2 cursor-pointer ${
+              className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer mt-3 ${
                 deliveryType === opt.value ? "border-black" : "border-gray-300"
               }`}
             >
-              <input
-                type="radio"
-                name="delivery"
-                value={opt.value}
-                checked={deliveryType === opt.value}
-                onChange={e => setDeliveryType(e.target.value)}
-                className="mr-2"
-              />
-              {opt.label} <span className="text-gray-500 ml-1">{opt.note}</span>
+              <div className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  name="delivery"
+                  value={opt.value}
+                  checked={deliveryType === opt.value}
+                  onChange={(e) => setDeliveryType(e.target.value)}
+                  className="accent-black"
+                />
+                <span className="font-medium text-gray-800">{opt.label}</span>
+              </div>
+              <span className="text-gray-500 text-sm">{opt.note}</span>
             </label>
           ))}
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-xl font-bold mb-4">Payment Method</h2>
+        <div className="bg-white rounded-2xl shadow-md p-6">
+          <h2 className="text-2xl font-bold mb-6">Payment Method</h2>
           <select
             value={paymentMethod}
-            onChange={e => setPaymentMethod(e.target.value)}
-            className="w-full p-3 border rounded"
+            onChange={(e) => setPaymentMethod(e.target.value)}
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
           >
             <option value="cash">Cash on Delivery</option>
             <option value="card">Card Payment</option>
@@ -96,39 +110,50 @@ const Order = () => {
         </div>
       </div>
 
-      {/* Right: Summary */}
-      <div className="flex-1 bg-white rounded-xl shadow p-6 space-y-4">
-        <h2 className="text-xl font-bold">Order Summary</h2>
+      {/* Right: Order Summary */}
+      <div className="flex-1 bg-white rounded-2xl shadow-md p-6 space-y-6">
+        <h2 className="text-2xl font-bold">Order Summary</h2>
+
         <ul className="divide-y divide-gray-200">
-          {cartItems.map(item => (
-            <li key={item.id} className="flex justify-between py-2">
-              <span>{item.name} × {item.quantity}</span>
+          {cartItems.map((item) => (
+            <li
+              key={item.id}
+              className="flex justify-between py-3 text-gray-700"
+            >
+              <span>
+                {item.name} × {item.quantity}
+              </span>
               <span>LKR {(item.price * item.quantity).toFixed(2)}</span>
             </li>
           ))}
         </ul>
 
-        <div className="pt-4 border-t space-y-2 text-sm">
+        <div className="space-y-2 text-gray-700 text-base border-t pt-6">
           <div className="flex justify-between">
-            <span>Subtotal</span><span>LKR {subtotal.toFixed(2)}</span>
+            <span>Subtotal</span>
+            <span>LKR {subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-green-600">
-            <span>Promotion</span><span>-LKR {promotion.toFixed(2)}</span>
+            <span>Promotion</span>
+            <span>-LKR {promotion.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Delivery Fee</span><span>LKR {deliveryFee.toFixed(2)}</span>
+            <span>Delivery Fee</span>
+            <span>LKR {deliveryFee.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Taxes</span><span>LKR {taxes.toFixed(2)}</span>
+            <span>Taxes</span>
+            <span>LKR {taxes.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-bold border-t pt-4 text-base">
-            <span>Total</span><span>LKR {total.toFixed(2)}</span>
+          <div className="flex justify-between text-lg font-bold border-t pt-4">
+            <span>Total</span>
+            <span>LKR {total.toFixed(2)}</span>
           </div>
         </div>
 
         <button
           onClick={handlePlaceOrder}
-          className="w-full mt-6 bg-black text-white py-4 rounded-lg font-semibold text-lg hover:bg-gray-800"
+          className="w-full mt-6 bg-black hover:bg-gray-900 text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300"
         >
           Place Order
         </button>
