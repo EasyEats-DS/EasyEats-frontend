@@ -80,6 +80,17 @@ const Home = () => {
         "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
       buttonText: "Pay Now",
     },
+    {
+      title: "forget-password",
+      description: "Reset your password",
+      link: "/forgot-password",
+      colorClass: "border-teal-500",
+      buttonClass: "bg-teal-500 hover:bg-teal-600",
+      iconColorClass: "text-teal-500",
+      svgPath:
+        "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+      buttonText: "Reset Password",
+    },
   ];
 
   return (
