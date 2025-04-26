@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Order = () => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const { cartItems = [], promotion = 0, note = "" } = location.state || {};
 
