@@ -21,6 +21,7 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
+import StripePaymentInterface from "./pages/StripePaymentInterface";
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const App = () => {
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        <Route path="/stripe" element={<ProtectedRoute><StripePaymentInterface/></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
