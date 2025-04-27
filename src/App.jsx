@@ -20,6 +20,7 @@ import AdminEarnings from "./pages/Admin/AdminEarnings";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ViewOrders from "./pages/viewOrders";
 
 const App = () => {
   return (
@@ -48,6 +49,7 @@ const App = () => {
         <Route path="/admin/earnings" element={<ProtectedRoute><AdminEarnings/></ProtectedRoute>} />
         <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
+        <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
