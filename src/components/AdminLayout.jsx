@@ -15,6 +15,7 @@ const AdminLayout = ({ children, title }) => {
     { icon: Package, label: 'Orders', path: '/admin/orders' },
     { icon: CreditCard, label: 'Earnings', path: '/admin/earnings' },
     { icon: Settings, label: 'Restaurant Settings', path: '/admin/settings' },
+    {icon: ShoppingCart, label: 'Inventory', path: '/admin/inventory' },
     { icon: User, label: 'Profile', path: '/admin/profile' },
   ];
 
