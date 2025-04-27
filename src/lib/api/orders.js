@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5003/orders";
+const API_URL = `${import.meta.env.VITE_BASE_URL}/orders`;
 
 export const fetchAllOrders = async (page = 1, limit = 10) => {
   const response = await axios.get(API_URL, {
