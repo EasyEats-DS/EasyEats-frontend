@@ -7,18 +7,63 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Node modules
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+out/
+
+# Local env files
+.env
+.env.*.local
+
+# Vite cache
+.vite/
+.vitepress/cache/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Mac system files
+*.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
+
+# Dependency directories
+.pnpm-store/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional: If you're using storybook
+.storybook-out/
+
+# Optional: If using testing libraries like Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Optional: If using coverage reports
+coverage/
+
+# Optional: VSCode settings (if you only want settings sync, not workspace settings)
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Optional: local history plugin files
+.history/
+
+# Optional: Next.js/Vercel deployments
+.vercel/
