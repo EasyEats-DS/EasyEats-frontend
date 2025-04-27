@@ -21,6 +21,7 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
+// import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
 const App = () => {
   return (
@@ -50,6 +51,10 @@ const App = () => {
         <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        {/* <Route path="/admin/restaurant-creation" element={<ProtectedRoute><AdminRestaurantCreation/></ProtectedRoute>} /> */}
+
+        {/* Fallback Route */}
+
       </Routes>
     </BrowserRouter>
   );
