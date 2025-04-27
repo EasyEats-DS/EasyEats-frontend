@@ -1,24 +1,40 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ChevronRight } from 'lucide-react';
 import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
+import axios from 'axios';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  // console.log(BASE_URL);
+
   
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
+
+    try {
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
+        email,
+        password,
+      });
+      console.log("Login successful:", response.data);
+      const { token } = response.data.data;
+      if (token) {
+        localStorage.setItem("authToken", token);
+      }
+      navigate("/");
+    } catch (err) {
+      console.error("Login error:", err);
+    } finally {
       setIsLoading(false);
-      navigate('/');
-    }, 1500);
+    }
   };
 
   return (
