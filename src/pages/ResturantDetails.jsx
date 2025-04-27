@@ -1,138 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Heart, Plus, Minus } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import FoodieButton from '../components/FoodieButton';
 import FoodieCard from '../components/FoodieCard';
-
-// Sample restaurant data
-const restaurantData = {
-  id: 1,
-  name: 'Burger Palace',
-  image: 'https://source.unsplash.com/random/1200x400/?burger-restaurant',
-  coverImage: 'https://source.unsplash.com/random/1200x400/?burger',
-  logo: 'https://source.unsplash.com/random/200x200/?burger-logo',
-  rating: 4.8,
-  reviewCount: 243,
-  deliveryTime: '15-25',
-  deliveryFee: 2.99,
-  categories: ['Burger', 'American', 'Fast Food'],
-  address: '123 Main St, New York, NY 10001',
-  description: 'The best burgers in town, made with fresh ingredients and our special sauce.',
-  openingHours: '10:00 AM - 10:00 PM',
-};
-
-// Sample menu categories and items
-const menuCategories = [
-  {
-    id: 1,
-    name: 'Popular Items',
-    items: [
-      {
-        id: 101,
-        name: 'Classic Cheeseburger',
-        description: 'Beef patty, cheddar cheese, lettuce, tomato, and our special sauce',
-        price: 8.99,
-        image: 'https://source.unsplash.com/random/400x300/?cheeseburger',
-        popular: true,
-      },
-      {
-        id: 102,
-        name: 'Bacon Deluxe',
-        description: 'Beef patty, bacon, cheddar cheese, caramelized onions, and BBQ sauce',
-        price: 10.99,
-        image: 'https://source.unsplash.com/random/400x300/?bacon-burger',
-        popular: true,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Burgers',
-    items: [
-      {
-        id: 201,
-        name: 'Classic Cheeseburger',
-        description: 'Beef patty, cheddar cheese, lettuce, tomato, and our special sauce',
-        price: 8.99,
-        image: 'https://source.unsplash.com/random/400x300/?cheeseburger',
-      },
-      {
-        id: 202,
-        name: 'Bacon Deluxe',
-        description: 'Beef patty, bacon, cheddar cheese, caramelized onions, and BBQ sauce',
-        price: 10.99,
-        image: 'https://source.unsplash.com/random/400x300/?bacon-burger',
-      },
-      {
-        id: 203,
-        name: 'Mushroom Swiss',
-        description: 'Beef patty, swiss cheese, sautéed mushrooms, and truffle aioli',
-        price: 11.99,
-        image: 'https://source.unsplash.com/random/400x300/?mushroom-burger',
-      },
-      {
-        id: 204,
-        name: 'Veggie Burger',
-        description: 'Plant-based patty, avocado, lettuce, tomato, and vegan mayo',
-        price: 9.99,
-        image: 'https://source.unsplash.com/random/400x300/?veggie-burger',
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Sides',
-    items: [
-      {
-        id: 301,
-        name: 'French Fries',
-        description: 'Crispy golden fries with sea salt',
-        price: 3.99,
-        image: 'https://source.unsplash.com/random/400x300/?french-fries',
-      },
-      {
-        id: 302,
-        name: 'Onion Rings',
-        description: 'Crispy battered onion rings with dipping sauce',
-        price: 4.99,
-        image: 'https://source.unsplash.com/random/400x300/?onion-rings',
-      },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Beverages',
-    items: [
-      {
-        id: 401,
-        name: 'Soft Drinks',
-        description: 'Cola, Diet Cola, Lemon-Lime, or Root Beer',
-        price: 2.49,
-        image: 'https://source.unsplash.com/random/400x300/?soft-drink',
-      },
-      {
-        id: 402,
-        name: 'Milkshake',
-        description: 'Vanilla, Chocolate, or Strawberry',
-        price: 4.99,
-        image: 'https://source.unsplash.com/random/400x300/?milkshake',
-      },
-    ],
-  },
-];
+import { restaurantService } from '../lib/api/resturants';
 
 const ResturantDetails = () => {
-  const [activeCategory, setActiveCategory] = useState(menuCategories[0].id);
+  const { id } = useParams(); // Get restaurant ID from URL params
+  const [restaurant, setRestaurant] = useState(null);
+  const [menuCategories, setMenuCategories] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState({});
+  const [error, setError] = useState(null);
   
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchRestaurantData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch restaurant details
+        const restaurantData = await restaurantService.getRestaurantById(id);
+        setRestaurant(restaurantData);
+        
+        // Fetch menu items
+        const menuResponse = await restaurantService.getRestaurantMenu(id);
+        
+        // Process menu data based on the API response format
+        // Group items by category
+        if (menuResponse) {
+          const menuItems = menuResponse.menu || [];
+          
+          // Get unique categories
+          const categories = [...new Set(menuItems.map(item => item.category))];
+          
+          // Create the menu categories structure expected by the component
+          const formattedCategories = categories.map((category, index) => {
+            return {
+              id: index + 1,
+              name: category,
+              items: menuItems
+                .filter(item => item.category === category)
+                .map(item => ({
+                  id: item._id,
+                  name: item.name,
+                  description: item.description,
+                  price: item.price,
+                  image: item.image || `/api/placeholder/400/300?text=${encodeURIComponent(item.name)}`,
+                  popular: item.popular || false,
+                  isAvailable: item.isAvailable
+                }))
+            };
+          });
+          
+          setMenuCategories(formattedCategories);
+          
+          // Set the first category as active by default
+          if (formattedCategories.length > 0) {
+            setActiveCategory(formattedCategories[0].id);
+          }
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load restaurant data');
+        setLoading(false);
+        console.error('Error loading restaurant data:', err);
+      }
+    };
+    
+    if (id) {
+      fetchRestaurantData();
+    }
+  }, [id]);
   
   const handleAddToCart = (item) => {
     setCart((prev) => ({
@@ -162,6 +103,18 @@ const ResturantDetails = () => {
     return Object.values(cart).reduce((a, b) => a + b, 0);
   };
   
+  // Format address object to string
+  const formatAddress = (addressObj) => {
+    if (!addressObj) return '';
+    
+    if (typeof addressObj === 'string') {
+      return addressObj;
+    }
+    
+    const { street, city, state, zipCode, country } = addressObj;
+    return [street, city, state, zipCode, country].filter(Boolean).join(', ');
+  };
+  
   if (loading) {
     return (
       <UserLayout>
@@ -174,13 +127,36 @@ const ResturantDetails = () => {
     );
   }
 
+  if (error) {
+    return (
+      <UserLayout>
+        <div className="flex flex-col items-center justify-center h-64">
+          <p className="text-red-500 text-xl">{error}</p>
+          <FoodieButton className="mt-4" onClick={() => window.history.back()}>
+            Go Back
+          </FoodieButton>
+        </div>
+      </UserLayout>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-xl">Restaurant not found</p>
+        </div>
+      </UserLayout>
+    );
+  }
+
   return (
-    <UserLayout title={restaurantData.name}>
+    <UserLayout title={restaurant.name || restaurant.restaurantName}>
       {/* Restaurant Header */}
       <div className="relative h-64 rounded-2xl overflow-hidden animate-fade-in">
         <img 
-          src={restaurantData.coverImage} 
-          alt={restaurantData.name}
+          src={restaurant.coverImage || restaurant.image || `/api/placeholder/1200/400?text=${encodeURIComponent(restaurant.name || restaurant.restaurantName)}`} 
+          alt={restaurant.name || restaurant.restaurantName}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -188,26 +164,26 @@ const ResturantDetails = () => {
         <div className="absolute bottom-0 left-0 p-6 flex items-end space-x-4">
           <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
             <img 
-              src={restaurantData.logo} 
-              alt={`${restaurantData.name} logo`}
+              src={restaurant.logo || restaurant.image || `/api/placeholder/200/200?text=${encodeURIComponent(restaurant.name || restaurant.restaurantName)}`} 
+              alt={`${restaurant.name || restaurant.restaurantName} logo`}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="text-white">
-            <h1 className="text-2xl font-bold">{restaurantData.name}</h1>
+            <h1 className="text-2xl font-bold">{restaurant.name || restaurant.restaurantName}</h1>
             <div className="flex items-center mt-1">
               <div className="flex items-center mr-3">
                 <Star className="w-4 h-4 fill-[#FF7A00] text-[#FF7A00]" />
-                <span className="ml-1">{restaurantData.rating}</span>
-                <span className="ml-1 opacity-80">({restaurantData.reviewCount})</span>
+                <span className="ml-1">{restaurant.rating || '4.5'}</span>
+                <span className="ml-1 opacity-80">({restaurant.reviewCount || 0})</span>
               </div>
               <div className="flex items-center mr-3">
                 <Clock className="w-4 h-4" />
-                <span className="ml-1">{restaurantData.deliveryTime} min</span>
+                <span className="ml-1">{restaurant.deliveryTime || '15-30'} min</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="w-4 h-4" />
-                <span className="ml-1 truncate max-w-[200px]">{restaurantData.address}</span>
+                <span className="ml-1 truncate max-w-[200px]">{formatAddress(restaurant.address)}</span>
               </div>
             </div>
           </div>
@@ -223,87 +199,101 @@ const ResturantDetails = () => {
         <aside className="md:w-1/4 mb-6 md:mb-0">
           <div className="bg-white rounded-xl shadow-sm p-4 sticky top-24 animate-fade-in">
             <h3 className="font-bold text-lg mb-4 border-b pb-2">Menu</h3>
-            <ul className="space-y-2">
-              {menuCategories.map((category) => (
-                <li key={category.id}>
-                  <button
-                    className={`w-full text-left py-2 px-4 rounded-lg transition-colors ${
-                      activeCategory === category.id 
-                        ? 'bg-[#FF7A00] text-white' 
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                    onClick={() => setActiveCategory(category.id)}
-                  >
-                    {category.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {menuCategories.length > 0 ? (
+              <ul className="space-y-2">
+                {menuCategories.map((category) => (
+                  <li key={category.id}>
+                    <button
+                      className={`w-full text-left py-2 px-4 rounded-lg transition-colors ${
+                        activeCategory === category.id 
+                          ? 'bg-[#FF7A00] text-white' 
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }`}
+                      onClick={() => setActiveCategory(category.id)}
+                    >
+                      {category.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No menu categories available</p>
+            )}
           </div>
         </aside>
         
         {/* Menu Items */}
         <div className="flex-1">
-          {menuCategories.map((category) => (
-            <div 
-              key={category.id}
-              id={`category-${category.id}`}
-              className="mb-8 animate-fade-in"
-            >
-              <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {category.items.map((item) => (
-                  <FoodieCard key={item.id} interactive={false} className="flex overflow-hidden">
-                    <div className="flex-1 p-2">
-                      {item.popular && (
-                        <span className="inline-block bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full mb-2">
-                          Popular
-                        </span>
-                      )}
-                      <h3 className="font-bold text-lg">{item.name}</h3>
-                      <p className="text-gray-600 text-sm mb-2">{item.description}</p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <p className="font-bold text-gray-800">${item.price.toFixed(2)}</p>
-                        <div className="flex items-center">
-                          {getItemQuantity(item.id) > 0 ? (
-                            <div className="flex items-center">
-                              <button 
-                                onClick={() => handleRemoveFromCart(item)}
-                                className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
-                              >
-                                <Minus className="w-5 h-5" />
-                              </button>
-                              <span className="px-3 font-medium">{getItemQuantity(item.id)}</span>
-                              <button 
-                                onClick={() => handleAddToCart(item)}
-                                className="p-1 rounded-full bg-[#FF7A00] text-white"
-                              >
-                                <Plus className="w-5 h-5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button 
-                              onClick={() => handleAddToCart(item)}
-                              className="bg-gray-100 hover:bg-[#FF7A00] hover:text-white transition-colors text-gray-700 px-3 py-1 rounded-full flex items-center"
-                            >
-                              <Plus className="w-4 h-4 mr-1" /> Add
-                            </button>
+          {menuCategories.length > 0 ? (
+            menuCategories.map((category) => (
+              <div 
+                key={category.id}
+                id={`category-${category.id}`}
+                className={`mb-8 animate-fade-in ${activeCategory === category.id ? '' : 'hidden md:block'}`}
+              >
+                <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
+                {category.items && category.items.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {category.items.map((item) => (
+                      <FoodieCard key={item.id} interactive={false} className="flex overflow-hidden">
+                        <div className="flex-1 p-4">
+                          {item.popular && (
+                            <span className="inline-block bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full mb-2">
+                              Popular
+                            </span>
                           )}
+                          <h3 className="font-bold text-lg">{item.name}</h3>
+                          <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                          <div className="flex items-center justify-between mt-auto">
+                            <p className="font-bold text-gray-800">${parseFloat(item.price).toFixed(2)}</p>
+                            <div className="flex items-center">
+                              {getItemQuantity(item.id) > 0 ? (
+                                <div className="flex items-center">
+                                  <button 
+                                    onClick={() => handleRemoveFromCart(item)}
+                                    className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                  >
+                                    <Minus className="w-5 h-5" />
+                                  </button>
+                                  <span className="px-3 font-medium">{getItemQuantity(item.id)}</span>
+                                  <button 
+                                    onClick={() => handleAddToCart(item)}
+                                    className="p-1 rounded-full bg-[#FF7A00] text-white"
+                                  >
+                                    <Plus className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={() => handleAddToCart(item)}
+                                  className="bg-gray-100 hover:bg-[#FF7A00] hover:text-white transition-colors text-gray-700 px-3 py-1 rounded-full flex items-center"
+                                >
+                                  <Plus className="w-4 h-4 mr-1" /> Add
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="w-1/3 h-auto">
-                      <img 
-                        src={item.image} 
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </FoodieCard>
-                ))}
+                        <div className="w-1/3 h-auto">
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </FoodieCard>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No items available in this category</p>
+                )}
               </div>
+            ))
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500">No menu items available for this restaurant</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
       
