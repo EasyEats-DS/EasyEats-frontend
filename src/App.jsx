@@ -22,6 +22,7 @@ import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
 import Refund from "./pages/Refund";
+// import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
 const App = () => {
   return (
@@ -53,6 +54,10 @@ const App = () => {
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        {/* <Route path="/admin/restaurant-creation" element={<ProtectedRoute><AdminRestaurantCreation/></ProtectedRoute>} /> */}
+
+        {/* Fallback Route */}
+
       </Routes>
     </BrowserRouter>
   );

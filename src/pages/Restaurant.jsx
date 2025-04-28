@@ -19,6 +19,7 @@ import UserLayout from "../components/UserLayout"
 import FoodieCard from "../components/FoodieCard"
 import FoodieButton from "../components/FoodieButton"
 import Footer from "../components/Footer"
+import { restaurantService } from "../lib/api/resturants"
 
 const categories = [
   { id: 1, name: "Pizza", image: "https://source.unsplash.com/random/200x200/?pizza" },
@@ -29,84 +30,6 @@ const categories = [
   { id: 6, name: "Dessert", image: "https://source.unsplash.com/random/200x200/?dessert" },
   { id: 7, name: "Indian", image: "https://source.unsplash.com/random/200x200/?indian-food" },
   { id: 8, name: "Mexican", image: "https://source.unsplash.com/random/200x200/?mexican-food" },
-]
-
-const restaurants = [
-  {
-    id: 1,
-    name: "Burger Palace",
-    image: "https://source.unsplash.com/random/600x400/?burger-restaurant",
-    rating: 4.8,
-    reviewCount: 243,
-    deliveryTime: "15-25",
-    deliveryFee: 2.99,
-    categories: ["Burger", "American", "Fast Food"],
-    distance: "1.2 miles away",
-    featured: true,
-    discount: "20% OFF",
-  },
-  {
-    id: 2,
-    name: "Pizza Heaven",
-    image: "https://source.unsplash.com/random/600x400/?pizza-restaurant",
-    rating: 4.6,
-    reviewCount: 189,
-    deliveryTime: "20-30",
-    deliveryFee: 1.99,
-    categories: ["Pizza", "Italian"],
-    distance: "0.8 miles away",
-    featured: false,
-  },
-  {
-    id: 3,
-    name: "Sushi Master",
-    image: "https://source.unsplash.com/random/600x400/?sushi-restaurant",
-    rating: 4.9,
-    reviewCount: 312,
-    deliveryTime: "25-35",
-    deliveryFee: 3.99,
-    categories: ["Japanese", "Sushi", "Asian"],
-    distance: "1.5 miles away",
-    featured: true,
-    discount: "Free Delivery",
-  },
-  {
-    id: 4,
-    name: "Green Garden",
-    image: "https://source.unsplash.com/random/600x400/?salad-restaurant",
-    rating: 4.5,
-    reviewCount: 156,
-    deliveryTime: "15-25",
-    deliveryFee: 2.49,
-    categories: ["Salad", "Healthy", "Vegan"],
-    distance: "0.6 miles away",
-    featured: false,
-  },
-  {
-    id: 5,
-    name: "Taco Fiesta",
-    image: "https://source.unsplash.com/random/600x400/?mexican-restaurant",
-    rating: 4.7,
-    reviewCount: 203,
-    deliveryTime: "20-30",
-    deliveryFee: 2.99,
-    categories: ["Mexican", "Tacos", "Burritos"],
-    distance: "1.7 miles away",
-    featured: false,
-  },
-  {
-    id: 6,
-    name: "Pasta Paradise",
-    image: "https://source.unsplash.com/random/600x400/?italian-restaurant",
-    rating: 4.6,
-    reviewCount: 178,
-    deliveryTime: "25-35",
-    deliveryFee: 3.49,
-    categories: ["Italian", "Pasta", "Pizza"],
-    distance: "2.1 miles away",
-    featured: true,
-    discount: "Buy 1 Get 1 Free",
-  },
 ]
 
 const promos = [
@@ -164,13 +87,38 @@ const Restaurant = () => {
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState("All")
   const [showFilters, setShowFilters] = useState(false)
+  const [restaurants, setRestaurants] = useState([])
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+    const fetchRestaurants = async () => {
+      try {
+        const data = await restaurantService.getAllRestaurants();
+        // Transform the API data to match your frontend structure
+        const transformedData = data.map((restaurant, index) => ({
+          id: restaurant._id,
+          name: restaurant.name,
+          image: restaurant.ResturantCoverImageUrl, // Use the API-provided image URL
+          rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
+          reviewCount: Math.floor(Math.random() * 300) + 50, // Random reviews 50-350
+          deliveryTime: `${Math.floor(Math.random() * 15) + 15}-${Math.floor(Math.random() * 15) + 25}`, // 15-40 min
+          deliveryFee: (Math.random() * 3 + 1).toFixed(2), // $1.00-$4.00
+          categories: restaurant.description.split(' ').slice(0, 3), // Use first 3 words of description
+          distance: `${(Math.random() * 2).toFixed(1)} miles away`,
+          featured: index < 3, // First 3 restaurants are featured
+          discount: index < 2 ? (index === 0 ? "20% OFF" : "Free Delivery") : undefined
+        }));
+        setRestaurants(transformedData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch restaurants:', err);
+        setError('Failed to load restaurants. Please try again later.');
+        setLoading(false);
+      }
+    };
+  
+    fetchRestaurants();
+  }, []);
 
   const handleRestaurantClick = (id) => {
     navigate(`/restaurant/${id}`)
@@ -182,6 +130,22 @@ const Restaurant = () => {
         <div className="flex flex-col items-center justify-center h-screen">
           <div className="w-16 h-16 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-[#FF7A00] font-medium text-lg">Loading delicious options...</p>
+        </div>
+      </UserLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <UserLayout>
+        <div className="flex flex-col items-center justify-center h-screen">
+          <p className="text-red-500 font-medium text-lg">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-[#FF7A00] text-white px-4 py-2 rounded-md hover:bg-[#FF9E00] transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </UserLayout>
     )
