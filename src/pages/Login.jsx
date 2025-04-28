@@ -5,6 +5,9 @@ import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
 import axios from 'axios';
 
+import handleLoginSuccess from '../utils/handleLoginSuccess';
+
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -12,12 +15,13 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  // console.log(BASE_URL);
 
   
   const handleLogin = async (e) => {
     e.preventDefault();
+  
     setIsLoading(true);
+
 
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, {
@@ -33,6 +37,7 @@ const Login = () => {
     } catch (err) {
       console.error("Login error:", err);
     } finally {
+
       setIsLoading(false);
     }
   };
