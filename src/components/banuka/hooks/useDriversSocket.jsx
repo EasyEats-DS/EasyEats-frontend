@@ -182,11 +182,12 @@ export default function useDriversSocket() {
     const driver = { ...loggedInDriver };
     socket.on('new_order', async(order) => {
       console.log("New order received:", order);
-
-      const pickupLat = order.restaurant?.position[0];
-      const pickupLng = order.restaurant?.position[1];
-      const dropoffLat = order.customer?.position[0];
-      const dropoffLng = order.customer?.position[1];
+      console.log("r_:", order.restaurant?.position.coordinates[0]);
+      console.log("c_", order.customer?.position.coordinates);
+      const pickupLat = order.restaurant?.position.coordinates[0];
+      const pickupLng = order.restaurant?.position.coordinates[1];
+      const dropoffLat = order.customer?.position.coordinates[0];
+      const dropoffLng = order.customer?.position.coordinates[1];
       console.log("Pickup coordinates:", pickupLat, pickupLng);
       console.log("Dropoff coordinates:", dropoffLat, dropoffLng);
 
@@ -206,7 +207,7 @@ export default function useDriversSocket() {
           padding: '10px 5px',
         }}>
           <p style={{ margin: '0 0 6px 0', fontWeight: 600 }}>
-            New delivery request from <span style={{ color: '#00c569' }}>{order.customer.fullName}</span>
+            New delivery request from <span style={{ color: '#00c569' }}>{order.customer.firstName +" "+order.customer.lastName }</span>
           </p>
           <p style={{ margin: '4px 0' }}> <strong>Pick-up:</strong> {order.restaurant.name}, {pickupCity}</p>
           <p style={{ margin: '4px 0' }}> <strong>Drop-off:</strong> {dropoffCity}</p>

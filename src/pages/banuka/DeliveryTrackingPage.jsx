@@ -5,9 +5,14 @@ import DeliveryList from '../../components/banuka/DeliveryList';
 import axios from 'axios';
 import './DeliveryTrackingPage.css';
 import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 const DeliveryTrackingPage = ({ userRole }) => {
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+
   const [deliveries, setDeliveries] = useState([]);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +23,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
     ? JSON.parse(localStorage.getItem('driver')) 
     : JSON.parse(localStorage.getItem('Customer'));
   
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     console.log("token_______:", token);
     console.log("Current User:", currentUser);
 
@@ -31,9 +36,9 @@ const DeliveryTrackingPage = ({ userRole }) => {
     try {
       let endpoint = '';
       if (userRole === 'driver') {
-        endpoint = `http://localhost:5003/deliveries/driver/${currentUser._id}`
+        endpoint = `${BASE_URL}/deliveries/driver/${currentUser._id}`
       } else {
-        endpoint = `http://localhost:5003/deliveries/cus/${currentUser._id}`;
+        endpoint = `${BASE_URL}/deliveries/cus/${currentUser._id}`;
       }
 
       const response = await axios.get(endpoint, {
@@ -109,11 +114,11 @@ const DeliveryTrackingPage = ({ userRole }) => {
     try {
       const response = await axios.patch(
         //`http://localhost:3001/api/delivery/${deliveryId}/status`,
-        `http://localhost:5003/deliveries/${deliveryId}/status`,
+        `${BASE_URL}/deliveries/${deliveryId}/status`,
         { status: newStatus },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`
           }
         }
       );

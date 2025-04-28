@@ -5,43 +5,29 @@ import { Mail, Lock, ChevronRight } from 'lucide-react';
 import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
 import axios from 'axios';
+import handleLoginSuccess from '../utils/handleLoginSuccess';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
   
   const handleLogin = async (e) => {
     e.preventDefault();
   
     setIsLoading(true);
     try {
-      const res = await axios.post(`http://localhost:5003/auth/login`, {
+      const res = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
       console.log("Login response111:", res.data.data.token); // Log the response data
 
       alert("Login Successful!");
-      localStorage.setItem('token', res.data.data.token); // Store token
-
-      console.log("Token:", res.data.data.token); // You can store it in localStorage
-      if(res.data.data.user.role == 'DELIVERY_PERSON'){
-        localStorage.setItem('userType', 'driver'); // Store user type
-        localStorage.setItem('driver', JSON.stringify(res.data.data.user));
-        //navigate('/driver/map'); // Redirect to driver map page
-      }else{
-
-        console.log("Login response:", res.data.data.user);
-        localStorage.setItem('userType', 'customer');
-        localStorage.removeItem('driver'); // optional cleanup
-        localStorage.setItem('Customer', JSON.stringify(res.data.data.user));
-        // setCustomer(res.data.customer);
-        alert("Login successful!");
-        //navigate('/customer/map');
-
-      }
+      handleLoginSuccess(res.data.data.user, res.data.data.token, navigate);
       
      
     } catch (err) {

@@ -29,9 +29,12 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   const [currentUser, setCurrentUser] = useState(null);
   const mapRef = useRef();
 
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+
   console.log("Map component mounted");
   console.log("availableDriversmap: ", availableDrivers);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken');
   console.log("token_______:", token);
   // Expose map methods to parent
   useImperativeHandle(ref, () => ({
@@ -100,7 +103,7 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
         if (userRole === 'driver') {
           const driver = JSON.parse(localStorage.getItem('driver'));
           const driverId = driver._id;
-          const delivery = await axios.get(`http://localhost:5003/deliveries/driver/${driverId}`,
+          const delivery = await axios.get(`${BASE_URL}/deliveries/driver/${driverId}`,
             {
               headers: {
                 Authorization: `${token}`,
