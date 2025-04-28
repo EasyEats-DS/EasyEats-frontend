@@ -39,3 +39,9 @@ export const updateOrderStatus = async (orderId, newStatus) => {
   const response = await axios.put(`${API_URL}/${orderId}/status`, { status: newStatus });
   return response.data;
 };
+
+// Delete a specific order by ID
+export const deleteOrder = async (orderId) => {
+  const response = await axios.delete(`${API_URL}/${orderId}`);
+  return response.data;  // { message: 'Order deleted successfully' }
+};
