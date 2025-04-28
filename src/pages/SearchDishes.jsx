@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, MapPin, Clock, Star, ShoppingCart, User, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import UserLayout from '../components/UserLayout';
 
 const SearchDishes = () => {
   const navigate = useNavigate();
@@ -47,36 +48,8 @@ const SearchDishes = () => {
   };
 
   return (
+    <UserLayout>
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm py-4 px-6 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-[#FF7A00]">FoodieVibe</h1>
-            <nav className="ml-16 hidden md:block">
-              <ul className="flex space-x-8">
-                <li><a href="/" className="text-gray-600 hover:text-gray-900">Home</a></li>
-                <li><a href="/restaurants" className="text-gray-900 font-medium">Restaurants</a></li>
-                <li><a href="/orders" className="text-gray-600 hover:text-gray-900">Orders</a></li>
-              </ul>
-            </nav>
-          </div>
-          <div className="flex items-center space-x-6">
-            <button className="text-gray-600 hover:text-gray-900">
-              <Search className="w-6 h-6" />
-            </button>
-            <div className="relative">
-              <button className="text-gray-600 hover:text-gray-900">
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-2 -right-2 bg-[#FF7A00] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">3</span>
-              </button>
-            </div>
-            <button className="text-gray-600 hover:text-gray-900">
-              <User className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6">
         {/* Search Section */}
@@ -304,6 +277,7 @@ const SearchDishes = () => {
         </div>
       </main>
     </div>
+    </UserLayout>
   );
 };
 

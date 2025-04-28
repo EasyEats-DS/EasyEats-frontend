@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Building, MapPin, Clock, Phone, Mail, Image, Globe, Plus, Trash } from 'lucide-react';
-import AdminLayout from '../../components/AdminLayout';
-import { restaurantService } from '../../lib/api/resturants';
-import { getUserFromToken } from '../../lib/auth'; // Update this import
+import { restaurantService } from '../lib/api/resturants';
+import { getUserFromToken } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
 
-const AdminRestaurantCreation = () => {
-  const [formData, setFormData] = useState({
+
+const CreateResturant = () => {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
     name: '',
     description: '',
     address: {
@@ -151,6 +153,7 @@ const handleSubmit = async (e) => {
 
     const createdRestaurant = await restaurantService.createRestaurant(payload);
     console.log("Restaurant created successfully:", createdRestaurant);
+    navigate('/admin/dashboard');
 
     setSuccess(true);
     // Reset form after successful submission
@@ -183,7 +186,6 @@ const handleSubmit = async (e) => {
 };
   
   return (
-    <AdminLayout title="Create Restaurant">
       <div className="max-w-6xl mx-auto">
         {success && (
           <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-md">
@@ -526,8 +528,8 @@ const handleSubmit = async (e) => {
           </div>
         </form>
       </div>
-    </AdminLayout>
+
   );
 };
 
-export default AdminRestaurantCreation;
+export default CreateResturant;
