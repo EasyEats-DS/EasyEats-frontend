@@ -98,10 +98,11 @@ export default function useDriversSocket() {
         }
 
         console.log("filteredDrivers-:", filteredDrivers);
-            
+        const filterdDrivers = filteredDrivers.filter(d => d?.role === 'DELIVERY_PERSON');
+            console.log("filterdDrivers1111:", filterdDrivers);
         setData({
           drivers,
-          availableDrivers:filteredDrivers,//: filteredDrivers.filter(d => d?.status === 'available'),
+          availableDrivers:filterdDrivers,//: filteredDrivers.filter(d => d?.status === 'available'),
           restaurants
         });
 
@@ -144,10 +145,11 @@ export default function useDriversSocket() {
         }
         
         const updatedfilteredDrivers = updatedDrivers.filter(driver => driver._id !== loggedInDriver._id);
+        const updatedDrivers1 = updatedfilteredDrivers.filter(driver => driver?.role === 'DELIVERY_PERSON');
         return {
           ...prevData,
           drivers: updatedDrivers,
-          availableDrivers: updatedfilteredDrivers,
+          availableDrivers: updatedDrivers1,
           restaurants: updatedRestaurants
         };
       });
