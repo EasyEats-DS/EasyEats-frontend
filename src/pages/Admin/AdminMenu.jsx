@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, Edit, Trash, Search, X, Upload, ChevronDown, CheckCircle, AlertCircle 
 } from 'lucide-react';
@@ -7,88 +6,11 @@ import AdminLayout from '../../components/AdminLayout';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieCard from '../../components/FoodieCard';
 import FoodieInput from '../../components/FoodieInput';
-
-
-// Sample menu categories and items
-const initialMenuCategories = [
-  {
-    id: 1,
-    name: 'Burgers',
-    items: [
-      {
-        id: 101,
-        name: 'Classic Cheeseburger',
-        description: 'Beef patty, cheddar cheese, lettuce, tomato, and our special sauce',
-        price: 8.99,
-        image: 'https://source.unsplash.com/random/400x300/?cheeseburger',
-        available: true,
-      },
-      {
-        id: 102,
-        name: 'Bacon Deluxe',
-        description: 'Beef patty, bacon, cheddar cheese, caramelized onions, and BBQ sauce',
-        price: 10.99,
-        image: 'https://source.unsplash.com/random/400x300/?bacon-burger',
-        available: true,
-      },
-      {
-        id: 103,
-        name: 'Mushroom Swiss',
-        description: 'Beef patty, swiss cheese, sautéed mushrooms, and truffle aioli',
-        price: 11.99,
-        image: 'https://source.unsplash.com/random/400x300/?mushroom-burger',
-        available: false,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Sides',
-    items: [
-      {
-        id: 201,
-        name: 'French Fries',
-        description: 'Crispy golden fries with sea salt',
-        price: 3.99,
-        image: 'https://source.unsplash.com/random/400x300/?french-fries',
-        available: true,
-      },
-      {
-        id: 202,
-        name: 'Onion Rings',
-        description: 'Crispy battered onion rings with dipping sauce',
-        price: 4.99,
-        image: 'https://source.unsplash.com/random/400x300/?onion-rings',
-        available: true,
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Beverages',
-    items: [
-      {
-        id: 301,
-        name: 'Soft Drinks',
-        description: 'Cola, Diet Cola, Lemon-Lime, or Root Beer',
-        price: 2.49,
-        image: 'https://source.unsplash.com/random/400x300/?soft-drink',
-        available: true,
-      },
-      {
-        id: 302,
-        name: 'Milkshake',
-        description: 'Vanilla, Chocolate, or Strawberry',
-        price: 4.99,
-        image: 'https://source.unsplash.com/random/400x300/?milkshake',
-        available: true,
-      },
-    ],
-  },
-];
+import { getUserFromToken } from '../../lib/auth';
+import { restaurantService } from '../../lib/api/resturants';
 
 const AdminMenu = () => {
-  const [menuCategories, setMenuCategories] = useState(initialMenuCategories);
+  const [menuCategories, setMenuCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewItemModal, setShowNewItemModal] = useState(false);
   const [newItemData, setNewItemData] = useState({
@@ -101,58 +23,112 @@ const AdminMenu = () => {
   });
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategory, setNewCategory] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [restaurantId, setRestaurantId] = useState(null);
 
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        setLoading(true);
+        const user = getUserFromToken();
+        if (!user || !user.id) {
+          throw new Error('No valid user token found');
+        }
+        const ownerId = user.id;
+        const restaurants = await restaurantService.getRestaurantsByOwnerId(ownerId);
+        if (!restaurants || restaurants.length === 0) {
+          throw new Error('No restaurant found for this user');
+        }
+        const restaurant = restaurants[0]; // Assuming one restaurant per user
+        setRestaurantId(restaurant._id); // Add this line
+        const menuResponse = await restaurantService.getRestaurantMenu(restaurant._id);
 
-  const handleAddItem = () => {
-    // Validation
+        
+        
+        if (menuResponse && menuResponse.menu) {
+          const menuItems = menuResponse.menu;
+          const categories = [...new Set(menuItems.map(item => item.category))];
+          
+          const formattedCategories = categories.map((category, index) => ({
+            id: index + 1,
+            name: category,
+            items: menuItems
+              .filter(item => item.category === category)
+              .map(item => ({
+                id: item._id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                image: item.imageUrl || 'https://source.unsplash.com/random/400x300/?food',
+                available: item.isAvailable,
+              })),
+          }));
+          
+          setMenuCategories(formattedCategories);
+        }
+        setLoading(false);
+      } catch (err) {
+        setError(err.message || 'Failed to load menu data');
+        setLoading(false);
+        console.error('Error fetching menu data:', err);
+      }
+    };
+  
+    fetchMenuData();
+  }, []);
+
+  const handleAddItem = async () => {
     if (!newItemData.name || !newItemData.price || !newItemData.categoryId) {
-
       return;
     }
-
-    // Create new item
-    const newItem = {
-      id: Date.now(),
+    const selectedCategory = menuCategories.find(cat => cat.id === parseInt(newItemData.categoryId));
+    if (!selectedCategory) {
+      return;
+    }
+    const categoryName = selectedCategory.name;
+    const newMenuItem = {
       name: newItemData.name,
       description: newItemData.description,
       price: parseFloat(newItemData.price),
-      image: newItemData.image || 'https://source.unsplash.com/random/400x300/?food',
-      available: newItemData.available,
+      category: categoryName,
+      isAvailable: newItemData.available,
+      imageUrl: newItemData.image || 'https://source.unsplash.com/random/400x300/?food',
     };
-
-    // Add item to category
-    setMenuCategories((prev) => 
-      prev.map((category) =>
-        category.id === parseInt(newItemData.categoryId)
-          ? { ...category, items: [...category.items, newItem] }
-          : category
-      )
-    );
-
-    // Reset and close modal
-    setNewItemData({
-      name: '',
-      description: '',
-      price: '',
-      categoryId: '',
-      available: true,
-      image: null,
-    });
-    setShowNewItemModal(false);
-
-    // toast({
-    //   title: "Success",
-    //   description: "Item added successfully",
-    // });
+    try {
+      const createdItem = await restaurantService.addMenuItem(restaurantId, newMenuItem);
+      const newLocalItem = {
+        id: createdItem._id,
+        name: createdItem.name,
+        description: createdItem.description,
+        price: createdItem.price,
+        image: createdItem.imageUrl || 'https://source.unsplash.com/random/400x300/?food',
+        available: createdItem.isAvailable,
+      };
+      setMenuCategories((prev) =>
+        prev.map((category) =>
+          category.id === parseInt(newItemData.categoryId)
+            ? { ...category, items: [...category.items, newLocalItem] }
+            : category
+        )
+      );
+      setNewItemData({
+        name: '',
+        description: '',
+        price: '',
+        categoryId: '',
+        available: true,
+        image: null,
+      });
+      setShowNewItemModal(false);
+    } catch (err) {
+      console.error('Error adding menu item:', err);
+    }
   };
+  
 
   const handleAddCategory = () => {
     if (!newCategory) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description: "Please enter a category name",
-    //   });
       return;
     }
 
@@ -165,11 +141,6 @@ const AdminMenu = () => {
     setMenuCategories((prev) => [...prev, newCategoryObj]);
     setNewCategory('');
     setShowNewCategoryModal(false);
-
-    // toast({
-    //   title: "Success",
-    //   description: "Category added successfully",
-    // });
   };
 
   const handleDeleteItem = (categoryId, itemId) => {
@@ -184,11 +155,6 @@ const AdminMenu = () => {
         return category;
       })
     );
-
-    // toast({
-    //   title: "Success",
-    //   description: "Item deleted successfully",
-    // });
   };
 
   const handleToggleAvailability = (categoryId, itemId) => {
@@ -216,6 +182,31 @@ const AdminMenu = () => {
     ),
   })).filter((category) => category.items.length > 0);
 
+  if (loading) {
+    return (
+      <AdminLayout title="Menu Management">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse">
+            <div className="w-12 h-12 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Menu Management">
+        <div className="flex flex-col items-center justify-center h-64">
+          <p className="text-red-500 text-xl">{error}</p>
+          <FoodieButton className="mt-4" onClick={() => window.location.reload()}>
+            Retry
+          </FoodieButton>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title="Menu Management">
       <div className="space-y-6 animate-fade-in">
@@ -240,15 +231,9 @@ const AdminMenu = () => {
           </div>
           <div className="flex gap-2">
             <FoodieButton
-              onClick={() => setShowNewCategoryModal(true)}
-              variant="secondary"
-            >
-              <Plus className="w-4 h-4 mr-1" /> Add Category
-            </FoodieButton>
-            <FoodieButton
               onClick={() => setShowNewItemModal(true)}
             >
-              <Plus className="w-4 h-4 mr-1" /> Add Item
+              <Plus className="w-4 h-4 mr-1" /> Add Menu Item
             </FoodieButton>
           </div>
         </div>
@@ -272,7 +257,7 @@ const AdminMenu = () => {
                   setShowNewItemModal(true);
                 }}
               >
-                <Plus className="w-4 h-4 mr-1" /> Add Item
+                <Plus className="w-4 h-4 mr-1" /> Add Menu Item
               </FoodieButton>
             </div>
           ) : (
@@ -349,7 +334,7 @@ const AdminMenu = () => {
       {/* New Item Modal */}
       {showNewItemModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md animate-fade-in">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md animate-fade-in h-[500px] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">Add New Item</h3>
               <button onClick={() => setShowNewItemModal(false)}>
@@ -410,42 +395,12 @@ const AdminMenu = () => {
               </div>
               
               <div>
-                <label className="block text-foodie-charcoal font-medium mb-2">
-                  Image
-                </label>
-                <div className="bg-foodie-gray-light rounded-lg border border-foodie-gray p-4 flex flex-col items-center">
-                  <div className="w-full h-32 flex items-center justify-center border-2 border-dashed border-foodie-gray rounded-lg mb-2">
-                    {newItemData.image ? (
-                      <img
-                        src={typeof newItemData.image === 'string' ? newItemData.image : URL.createObjectURL(newItemData.image)}
-                        alt="Preview"
-                        className="h-full object-contain"
-                      />
-                    ) : (
-                      <div className="text-center text-foodie-gray-dark">
-                        <Upload className="w-8 h-8 mx-auto mb-1" />
-                        <p>Upload image</p>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    id="item-image"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) {
-                        setNewItemData({...newItemData, image: e.target.files[0]});
-                      }
-                    }}
-                  />
-                  <label
-                    htmlFor="item-image"
-                    className="cursor-pointer text-foodie-orange hover:underline text-sm"
-                  >
-                    Choose file
-                  </label>
-                </div>
+                <FoodieInput
+                  label="Image URL"
+                  placeholder="https://example.com/image.jpg"
+                  value={newItemData.image}
+                  onChange={(e) => setNewItemData({ ...newItemData, image: e.target.value })}
+                />
               </div>
               
               <div className="flex items-center">

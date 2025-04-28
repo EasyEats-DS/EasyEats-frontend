@@ -1,63 +1,63 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+// import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, ShoppingBag, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import FoodieCard from '../../components/FoodieCard';
 
-const orderData = [
-  { name: 'Mon', orders: 4 },
-  { name: 'Tue', orders: 6 },
-  { name: 'Wed', orders: 8 },
-  { name: 'Thu', orders: 7 },
-  { name: 'Fri', orders: 12 },
-  { name: 'Sat', orders: 15 },
-  { name: 'Sun', orders: 10 },
-];
+// const orderData = [
+//   { name: 'Mon', orders: 4 },
+//   { name: 'Tue', orders: 6 },
+//   { name: 'Wed', orders: 8 },
+//   { name: 'Thu', orders: 7 },
+//   { name: 'Fri', orders: 12 },
+//   { name: 'Sat', orders: 15 },
+//   { name: 'Sun', orders: 10 },
+// ];
 
-const revenueData = [
-  { name: 'Mon', revenue: 120 },
-  { name: 'Tue', revenue: 180 },
-  { name: 'Wed', revenue: 240 },
-  { name: 'Thu', revenue: 210 },
-  { name: 'Fri', revenue: 360 },
-  { name: 'Sat', revenue: 450 },
-  { name: 'Sun', revenue: 300 },
-];
+// const revenueData = [
+//   { name: 'Mon', revenue: 120 },
+//   { name: 'Tue', revenue: 180 },
+//   { name: 'Wed', revenue: 240 },
+//   { name: 'Thu', revenue: 210 },
+//   { name: 'Fri', revenue: 360 },
+//   { name: 'Sat', revenue: 450 },
+//   { name: 'Sun', revenue: 300 },
+// ];
 
-const recentOrders = [
-  { 
-    id: '#ORD-5312', 
-    customer: 'John Doe', 
-    items: ['Classic Cheeseburger', 'French Fries', 'Soft Drink'],
-    status: 'Completed', 
-    total: 18.47,
-    date: '25 Apr, 2:30 PM' 
-  },
-  { 
-    id: '#ORD-5311', 
-    customer: 'Alice Smith', 
-    items: ['Veggie Burger', 'Onion Rings', 'Milkshake'],
-    status: 'Preparing', 
-    total: 22.95,
-    date: '25 Apr, 2:15 PM' 
-  },
-  { 
-    id: '#ORD-5310', 
-    customer: 'Robert Brown', 
-    items: ['Bacon Deluxe', 'French Fries'],
-    status: 'Delivering', 
-    total: 14.98,
-    date: '25 Apr, 1:45 PM' 
-  },
-  { 
-    id: '#ORD-5309', 
-    customer: 'Emily Johnson', 
-    items: ['Mushroom Swiss', 'Soft Drink'],
-    status: 'Completed', 
-    total: 14.48,
-    date: '25 Apr, 1:20 PM' 
-  },
-];
+// const recentOrders = [
+//   { 
+//     id: '#ORD-5312', 
+//     customer: 'John Doe', 
+//     items: ['Classic Cheeseburger', 'French Fries', 'Soft Drink'],
+//     status: 'Completed', 
+//     total: 18.47,
+//     date: '25 Apr, 2:30 PM' 
+//   },
+//   { 
+//     id: '#ORD-5311', 
+//     customer: 'Alice Smith', 
+//     items: ['Veggie Burger', 'Onion Rings', 'Milkshake'],
+//     status: 'Preparing', 
+//     total: 22.95,
+//     date: '25 Apr, 2:15 PM' 
+//   },
+//   { 
+//     id: '#ORD-5310', 
+//     customer: 'Robert Brown', 
+//     items: ['Bacon Deluxe', 'French Fries'],
+//     status: 'Delivering', 
+//     total: 14.98,
+//     date: '25 Apr, 1:45 PM' 
+//   },
+//   { 
+//     id: '#ORD-5309', 
+//     customer: 'Emily Johnson', 
+//     items: ['Mushroom Swiss', 'Soft Drink'],
+//     status: 'Completed', 
+//     total: 14.48,
+//     date: '25 Apr, 1:20 PM' 
+//   },
+// ];
 
 const AdminDashboard = () => {
   return (
@@ -132,7 +132,7 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FoodieCard interactive={false} className="p-6">
             <h3 className="text-lg font-bold mb-4">Orders Overview</h3>
-            <div className="h-64">
+            {/* <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={orderData}
@@ -160,12 +160,12 @@ const AdminDashboard = () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </div> */}
           </FoodieCard>
           
           <FoodieCard interactive={false} className="p-6">
             <h3 className="text-lg font-bold mb-4">Revenue Overview</h3>
-            <div className="h-64">
+            {/* <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={revenueData}
@@ -193,7 +193,7 @@ const AdminDashboard = () => {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </div> */}
           </FoodieCard>
         </div>
         
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
               View All
             </button>
           </div>
-          <div className="overflow-x-auto">
+          {/* <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b border-foodie-gray">
@@ -243,7 +243,7 @@ const AdminDashboard = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> */}
         </FoodieCard>
       </div>
     </AdminLayout>

@@ -18,20 +18,47 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
-      console.log("Login successful:", response.data);
-      const { token } = response.data.data;
+      
+      console.log("Login successful:", response.data.data);
+      const { token, user } = response.data.data; // Assuming the response includes user data
+      
       if (token) {
         localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(user)); // Store user data including role
       }
-      navigate("/");
+  
+      // Redirect based on user role
+      if (user.role === "RESTAURANT_OWNER") {
+        // Check if they already have a restaurant
+        try {
+          const restaurantResponse = await axios.get(`${BASE_URL}/restaurants/owner/${user._id}`);
+          // console.log("Restaurant check response:", restaurantResponse);
+          
+          // Check if the response array has items
+          if (restaurantResponse.data.length > 0) {
+            navigate("/admin/dashboard"); // User has a restaurant
+          } else {
+            navigate("/create-restaurant"); // User doesn't have a restaurant
+          }
+        } catch (error) {
+          console.error("Error checking restaurant:", error);
+          // If there's an error checking, navigate to create restaurant
+          navigate("/create-restaurant");
+        }
+      } else {
+        // Default redirect for other roles
+        navigate("/");
+      }
     } catch (err) {
       console.error("Login error:", err);
+      // Handle error (show error message to user)
+      // setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
