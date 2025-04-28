@@ -33,7 +33,7 @@ import Refund from "./pages/Refund";
 import StripePayment from "./pages/Stripepayment";
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
-
+//banuka
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 
 // Initialize Stripe
@@ -53,6 +53,9 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgetPassword />} />
 
           {/* Protected Routes */}
+          <Route path="/driver/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
+          <Route path="/customer/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
+
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/restaurant" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
@@ -74,7 +77,7 @@ const App = () => {
           <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
         </Routes>
       </Elements>
-
+      <ToastContainer/>
     </BrowserRouter>
   );
 };

@@ -32,8 +32,10 @@ const Login = () => {
 
       
       console.log("Login successful:", response.data.data);
+      handleLoginSuccess(response.data.data.user, response.data.data.token, navigate);
+
       const { token, user } = response.data.data; // Assuming the response includes user data
-      
+      console.log("User data:", user,'token',token); // Debug log
 
       if (token) {
         localStorage.setItem("authToken", token);
