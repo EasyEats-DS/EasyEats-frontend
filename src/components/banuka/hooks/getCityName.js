@@ -8,7 +8,10 @@ export default async function getCityName   (lat, lng)  {
       );
       const data = await response.json();
       console.log("City name response:", data.address.road,data.address.suburb,data.address.city);
-      let cityName = data.address.road + ' , ' + data.address.suburb + ' , ' + data.address.city;
+      let sub = data.address.suburb?data.address.suburb:" ";
+      let cit = data.address.city?data.address.city:" ";
+
+      let cityName = data.address.road + '  ' + sub + '  ' + cit;
       return cityName || 'Unknown location';
     //   return data.address.city || data.address.town || data.address.village || 'Unknown location';
     } catch (error) {
