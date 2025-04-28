@@ -48,6 +48,8 @@ const Order = () => {
 
       if (paymentMethod === "cash") {
         await createOrder(payload);
+        localStorage.removeItem("cartItems");
+        localStorage.removeItem("cartRestaurantId");
         navigate("/orderConfirmed");
       } else {
         navigate("/payment", { state: { orderPayload: payload } });
