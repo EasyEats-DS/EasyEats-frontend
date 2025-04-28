@@ -29,7 +29,8 @@ const Login = () => {
         password,
       });
       console.log("Login successful:", response.data);
-      const { token } = response.data.data;
+      handleLoginSuccess(response.data.data.user, response.data.data.token, navigate);
+      const { token } = response.data.data.token;
       if (token) {
         localStorage.setItem("authToken", token);
       }

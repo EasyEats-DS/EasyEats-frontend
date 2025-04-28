@@ -1,7 +1,7 @@
 // src/utils/handleLoginSuccess.js
 
 export default function handleLoginSuccess(user, token, navigate) {
-    localStorage.setItem('authToken', token);
+    //localStorage.setItem('authToken', token);
   
     if (user.role === 'DELIVERY_PERSON') {
       localStorage.setItem('userType', 'driver');
