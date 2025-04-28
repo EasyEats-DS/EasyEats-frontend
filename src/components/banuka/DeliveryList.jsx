@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './DeliveryList.css';
 import getCityName from '../banuka/hooks/getCityName';
+import axios from 'axios';
 
 const DeliveryList = ({ 
   deliveries, 
@@ -13,11 +14,14 @@ const DeliveryList = ({
   console.log("Deliveries:____", deliveries);
   const [cityMap, setCityMap] = useState({});
   const [expandedDelivery, setExpandedDelivery] = useState(null);
+  const [localDeliveries, setLocalDeliveries] = useState(deliveries);
 
   useEffect(() => {
+    setLocalDeliveries(deliveries);
+
     const fetchCities = async () => {
       const newCityMap = {};
-      for (const delivery of deliveries) {
+      for (const delivery of localDeliveries) {
         try {
           if (delivery.customerId?.position) {
             const [lat, lng] = delivery.customerId.position.coordinates;
@@ -32,7 +36,7 @@ const DeliveryList = ({
       setCityMap(newCityMap);
     };
 
-    if (deliveries.length) fetchCities();
+    if (localDeliveries.length) fetchCities();
   }, [deliveries]);
 
   const handleContactDriver = (delivery, e) => {
@@ -44,6 +48,18 @@ const DeliveryList = ({
       alert('No driver assigned to this delivery yet');
     }
   };
+
+  const handleRemove = async (deliveryId, status, e) => {
+    try {
+    const res = await axios.delete(`http://localhost:5003/deliveries/${deliveryId}`);
+    setLocalDeliveries(prev => prev.filter(delivery => delivery._id !== deliveryId));
+    }catch (error) {
+
+      console.error("Error removing delivery:", error);
+      alert("Failed to remove delivery. Please try again.");
+
+  }
+}
 
   const handleStatusUpdate = (deliveryId, status, e) => {
     e.stopPropagation();
@@ -92,10 +108,20 @@ const DeliveryList = ({
               Complete
             </button>
           )}
+
+        {/* {delivery.deliveryStatus === 'completed' && (
+          <button 
+            className="btn-remove"
+            onClick={(e) => handleRemove(delivery._id, 'removed', e)}
+          >
+            Remove
+          </button>
+        )} */}
         </>
       );
     } else {
       return (
+        <>
         <button 
           className="btn-contact"
           onClick={(e) => {
@@ -105,6 +131,18 @@ const DeliveryList = ({
         >
           {delivery.driverId ? 'Track Driver' : 'No Driver Assigned'}
         </button>
+
+        {delivery.deliveryStatus === 'completed' && (
+          <button 
+            className="btn-remove"
+            onClick={(e) => handleRemove(delivery._id, 'removed', e)}
+          >
+            Remove
+          </button>
+        )}
+
+        </>
+        
       );
     }
   };
@@ -112,13 +150,13 @@ const DeliveryList = ({
   return (
     <div className="delivery-list">
       <h2>{userRole === 'driver' ? 'Your Assigned Deliveries' : 'Your Orders'}</h2>
-      {deliveries.length === 0 ? (
+      {localDeliveries.length === 0 ? (
         <div className="no-deliveries">
           {userRole === 'driver' ? 'No deliveries assigned' : 'No orders found'}
         </div>
       ) : (
         <div className="delivery-items">
-          {deliveries.map(delivery => (
+          {localDeliveries.map(delivery => (
             <div 
               key={delivery._id}
               className={`delivery-item ${selectedDelivery?._id === delivery._id ? 'active' : ''}`}

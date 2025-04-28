@@ -4,6 +4,20 @@
     height: 100%;
     overflow-y: auto;
   }
+
+  .btn-remove {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  
+  .btn-remove:hover {
+    background-color: #c0392b;
+  }
   
   .delivery-list h2 {
     margin-top: 0;
