@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import FoodieCard from '../../components/FoodieCard';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
-import { fetchAllOrders, updateOrderStatus } from '../../lib/api/orders'; // ✅ Also import updateOrderStatus
+import { fetchAllOrders, fetchAllOrdersNoPagination, updateOrderStatus } from '../../lib/api/orders'; // ✅ Also import updateOrderStatus
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -17,7 +17,7 @@ const AdminOrders = () => {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const fetchedOrders = await fetchAllOrders();
+        const fetchedOrders = await fetchAllOrdersNoPagination();
         console.log("Fetched Orders:", fetchedOrders);
         setOrders(fetchedOrders);
       } catch (err) {
