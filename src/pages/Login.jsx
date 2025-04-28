@@ -5,6 +5,9 @@ import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
 import axios from 'axios';
 
+import handleLoginSuccess from '../utils/handleLoginSuccess';
+
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -12,22 +15,26 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  // console.log(BASE_URL);
 
   
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
   
+    setIsLoading(true);
+
+  
+
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
+
       
       console.log("Login successful:", response.data.data);
       const { token, user } = response.data.data; // Assuming the response includes user data
       
+
       if (token) {
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user)); // Store user data including role
@@ -60,6 +67,7 @@ const Login = () => {
       // Handle error (show error message to user)
       // setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
+
       setIsLoading(false);
     }
   };

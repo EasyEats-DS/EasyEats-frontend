@@ -1,7 +1,12 @@
 import React from "react";
+
+import { ToastContainer } from "react-toastify";
+
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Resturant from "./pages/Restaurant";
@@ -23,16 +28,23 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
+import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
 import Refund from "./pages/Refund";
 import StripePayment from "./pages/Stripepayment";
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
+
+import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
+
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
+
 const App = () => {
+  useDriversSocket();
   return (
     <BrowserRouter>
+
       <Elements stripe={stripePromise}>
         <Routes>
           {/* Public Routes */}
@@ -62,6 +74,7 @@ const App = () => {
           <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
         </Routes>
       </Elements>
+>
     </BrowserRouter>
   );
 };

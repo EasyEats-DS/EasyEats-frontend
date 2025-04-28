@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+
 import { loadStripe } from '@stripe/stripe-js';
 import { CardElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js';
+
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // Initialize Stripe with your publishable key
+
 const stripePromise = loadStripe(process.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 
 const PaymentForm = ({ amount }) => {
   const stripe = useStripe();
@@ -125,9 +129,11 @@ const StripePaymentInterface = ({ amount = 1000 }) => {
           <h1 className="text-white text-xl font-bold">Complete Your Payment</h1>
         </div>
         <div className="p-6">
+
           <Elements stripe={stripePromise}>
             <PaymentForm amount={amount} />
           </Elements>
+
         </div>
       </div>
     </div>
