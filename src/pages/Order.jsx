@@ -46,9 +46,8 @@ const Order = () => {
         // deliveryAddress, dropNote, deliveryType, note
       };
 
-      await createOrder(payload);
-
       if (paymentMethod === "cash") {
+        await createOrder(payload);
         navigate("/orderConfirmed");
       } else {
         navigate("/payment", { state: { orderPayload: payload } });
