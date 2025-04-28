@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import FoodieCard from '../../components/FoodieCard';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
-import { fetchAllOrders, fetchAllOrdersNoPagination, updateOrderStatus } from '../../lib/api/orders'; // ✅ Also import updateOrderStatus
+import { fetchAllOrdersNoPagination, updateOrderStatus, deleteOrder } from '../../lib/api/orders';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -17,9 +17,8 @@ const AdminOrders = () => {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const fetchedOrders = await fetchAllOrdersNoPagination();
-        console.log("Fetched Orders:", fetchedOrders);
-        setOrders(fetchedOrders);
+        const fetched = await fetchAllOrdersNoPagination();
+        setOrders(fetched);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch orders.");
@@ -31,10 +30,10 @@ const AdminOrders = () => {
   }, []);
 
   const filteredOrders = orders
-    .filter((order) =>
+    .filter(order =>
       order._id.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter((order) => statusFilter === 'all' || order.status === statusFilter);
+    .filter(order => statusFilter === 'all' || order.status === statusFilter);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -43,44 +42,44 @@ const AdminOrders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await updateOrderStatus(orderId, newStatus);
-
-      // Update both orders array and selectedOrder
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
+      setOrders(prev =>
+        prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o)
       );
-
-      if (selectedOrder && selectedOrder._id === orderId) {
-        setSelectedOrder((prevSelected) => ({
-          ...prevSelected,
-          status: newStatus,
-        }));
+      if (selectedOrder?._id === orderId) {
+        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
       }
-
       alert("Order status updated successfully!");
-
-    } catch (error) {
-      console.error("Failed to update order status:", error);
+    } catch (err) {
+      console.error("Failed to update order status:", err);
       alert("Failed to update order status. Please try again.");
     }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending':
-        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
-      case 'processing':
-        return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Processing</span>;
-      case 'shipped':
-        return <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Shipped</span>;
-      case 'delivered':
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Delivered</span>;
-      case 'cancelled':
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelled</span>;
-      default:
-        return null;
+  const handleDelete = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+    try {
+      await deleteOrder(orderId);
+      setOrders(prev => prev.filter(o => o._id !== orderId));
+      setSelectedOrder(null);
+      alert("Order deleted successfully!");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete order. Please try again.");
     }
+  };
+
+  const getStatusBadge = (status) => {
+    const map = {
+      pending:  ["Pending", "bg-yellow-100 text-yellow-800"],
+      processing: ["Processing","bg-blue-100 text-blue-800"],
+      shipped:   ["Shipped",   "bg-purple-100 text-purple-800"],
+      delivered: ["Delivered","bg-green-100 text-green-800"],
+      cancelled: ["Cancelled","bg-red-100 text-red-800"],
+    };
+    const [label, cls] = map[status] || [];
+    return label
+      ? <span className={`px-3 py-1 rounded-full text-xs font-medium ${cls}`}>{label}</span>
+      : null;
   };
 
   return (
@@ -101,7 +100,7 @@ const AdminOrders = () => {
                 <div className="relative min-w-[150px]">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={e => setStatusFilter(e.target.value)}
                     className="w-full bg-foodie-gray-light rounded-lg px-4 py-3 appearance-none border border-foodie-gray focus:outline-none focus:border-foodie-orange"
                   >
                     <option value="all">All Orders</option>
@@ -129,24 +128,21 @@ const AdminOrders = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredOrders.map((order) => (
+                  {filteredOrders.map(order => (
                     <FoodieCard
                       key={order._id}
                       className={`cursor-pointer transition-all ${
-                        selectedOrder && selectedOrder._id === order._id
-                          ? 'border-2 border-foodie-orange'
-                          : ''
+                        selectedOrder?._id === order._id ? 'border-2 border-foodie-orange' : ''
                       }`}
                       onClick={() => handleOrderClick(order)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-bold">Order #{order._id.slice(0, 6)}...</h3>
+                          <h3 className="font-bold">Order #{order._id.slice(0, 6)}…</h3>
                           <p className="text-foodie-gray-dark text-sm">User: {order.userId}</p>
                         </div>
                         {getStatusBadge(order.status)}
                       </div>
-
                       <div className="flex justify-between items-center border-t border-foodie-gray pt-3">
                         <div className="flex items-center text-sm text-foodie-gray-dark">
                           <Clock className="w-4 h-4 mr-1" />
@@ -171,7 +167,7 @@ const AdminOrders = () => {
             {selectedOrder ? (
               <FoodieCard interactive={false} className="sticky top-24 space-y-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-lg">Order #{selectedOrder._id.slice(0, 6)}...</h3>
+                  <h3 className="font-bold text-lg">Order #{selectedOrder._id.slice(0,6)}…</h3>
                   {getStatusBadge(selectedOrder.status)}
                 </div>
 
@@ -186,7 +182,7 @@ const AdminOrders = () => {
                   <h4 className="font-medium text-foodie-gray-dark mb-2">Update Status</h4>
                   <select
                     value={selectedOrder.status}
-                    onChange={(e) => handleStatusChange(selectedOrder._id, e.target.value)}
+                    onChange={e => handleStatusChange(selectedOrder._id, e.target.value)}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="pending">Pending</option>
@@ -195,6 +191,15 @@ const AdminOrders = () => {
                     <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
+                </div>
+
+                {/* Delete button */}
+                <div className="mt-3">
+                  <FoodieButton variant="outline" className="w-full py-2 text-sm border-foodie-red text-foodie-red hover:bg-foodie-red/10 transition-colors duration-200"
+                  onClick={() => handleDelete(selectedOrder._id)}
+                >
+                  Delete Order
+                  </FoodieButton>
                 </div>
               </FoodieCard>
             ) : (
