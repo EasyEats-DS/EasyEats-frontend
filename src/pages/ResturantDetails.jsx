@@ -5,6 +5,7 @@ import UserLayout from '../components/UserLayout';
 import FoodieButton from '../components/FoodieButton';
 import FoodieCard from '../components/FoodieCard';
 import { restaurantService } from '../lib/api/resturants';
+import { generateAvatarUrl } from '../lib/avatar'
 
 const ResturantDetails = () => {
   const { id } = useParams();
@@ -113,6 +114,7 @@ const ResturantDetails = () => {
         setError('Failed to load restaurant data');
       } finally {
         setLoading(false);
+        console.error('Error loading restaurant data:');
       }
     };
 
@@ -154,76 +156,62 @@ const ResturantDetails = () => {
     );
   }
 
-  // preserve your exact UI below:
-
   return (
     <UserLayout title={restaurant.name || restaurant.restaurantName}>
       {/* Restaurant Header */}
       <div className="relative h-64 rounded-2xl overflow-hidden animate-fade-in">
         <img
-          src={
-            restaurant.coverImage ||
-            restaurant.image ||
-            `/api/placeholder/1200/400?text=${encodeURIComponent(
-              restaurant.name || restaurant.restaurantName
-            )}`
-          }
-          alt={restaurant.name || restaurant.restaurantName}
+          src={restaurant.ResturantCoverImageUrl}
+          alt={restaurant.restaurantName}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-
+        
         <div className="absolute bottom-0 left-0 p-6 flex items-end space-x-4">
-          <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
-            <img
-              src={
-                restaurant.logo ||
-                restaurant.image ||
-                `/api/placeholder/200/200?text=${encodeURIComponent(
-                  restaurant.name || restaurant.restaurantName
-                )}`
-              }
-              alt={`${restaurant.name || restaurant.restaurantName} logo`}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
+  <img
+    src={
+      restaurant.logo ||
+      restaurant.image ||
+      generateAvatarUrl(restaurant.name || restaurant.restaurantName)
+    }
+    alt={`${restaurant.name || restaurant.restaurantName} logo`}
+    className="w-full h-full object-cover"
+  />
+</div>
           <div className="text-white">
-            <h1 className="text-2xl font-bold">{restaurant.name || restaurant.restaurantName}</h1>
+            <h1 className="text-2xl font-bold">
+              {restaurant.name || restaurant.restaurantName}
+            </h1>
             <div className="flex items-center mt-1">
               <div className="flex items-center mr-3">
                 <Star className="w-4 h-4 fill-[#FF7A00] text-[#FF7A00]" />
-                <span className="ml-1">{restaurant.rating || '4.5'}</span>
-                <span className="ml-1 opacity-80">({restaurant.reviewCount || 0})</span>
+                <span className="ml-1">{restaurant.rating || "4.5"}</span>
+                <span className="ml-1 opacity-80">
+                  ({restaurant.reviewCount || 0})
+                </span>
               </div>
               <div className="flex items-center mr-3">
                 <Clock className="w-4 h-4" />
-                <span className="ml-1">{restaurant.deliveryTime || '15-30'} min</span>
+                <span className="ml-1">
+                  {restaurant.openingHours || "15-30"} min
+                </span>
               </div>
               <div className="flex items-center">
                 <MapPin className="w-4 h-4" />
                 <span className="ml-1 truncate max-w-[200px]">
-                  {typeof restaurant.address === 'string'
-                    ? restaurant.address
-                    : [
-                        restaurant.address.street,
-                        restaurant.address.city,
-                        restaurant.address.state,
-                        restaurant.address.zipCode,
-                        restaurant.address.country
-                      ]
-                        .filter(Boolean)
-                        .join(', ')}
+                  {/* {formatAddress(restaurant.address)} */}
                 </span>
               </div>
             </div>
           </div>
         </div>
-
+        
         <button className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm p-2 rounded-full hover:bg-white/20 transition-colors">
           <Heart className="w-6 h-6 text-white" />
         </button>
       </div>
-
+      
       <div className="mt-6 flex flex-col md:flex-row md:space-x-8">
         {/* Category Navigation */}
         <aside className="md:w-1/4 mb-6 md:mb-0">
@@ -236,8 +224,8 @@ const ResturantDetails = () => {
                     <button
                       className={`w-full text-left py-2 px-4 rounded-lg transition-colors ${
                         activeCategory === category.id
-                          ? 'bg-[#FF7A00] text-white'
-                          : 'hover:bg-gray-100 text-gray-700'
+                          ? "bg-[#FF7A00] text-white"
+                          : "hover:bg-gray-100 text-gray-700"
                       }`}
                       onClick={() => setActiveCategory(category.id)}
                     >
@@ -247,11 +235,13 @@ const ResturantDetails = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500 text-center py-4">No menu categories available</p>
+              <p className="text-gray-500 text-center py-4">
+                No menu categories available
+              </p>
             )}
           </div>
         </aside>
-
+        
         {/* Menu Items */}
         <div className="flex-1">
           {menuCategories.length > 0 ? (
@@ -323,12 +313,14 @@ const ResturantDetails = () => {
             )
           ) : (
             <div className="text-center py-10">
-              <p className="text-gray-500">No menu items available for this restaurant</p>
+              <p className="text-gray-500">
+                No menu items available for this restaurant
+              </p>
             </div>
           )}
         </div>
       </div>
-
+      
       {/* Cart Button */}
       {getTotalItems() > 0 && (
         <div className="fixed bottom-20 left-0 right-0 flex justify-center z-10 animate-fade-in">
