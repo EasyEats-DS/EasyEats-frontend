@@ -14,7 +14,6 @@ function Notification() {
 
   const fetchNotifications = async () => {
     try {
-
       const token = localStorage.getItem('authToken');
       if (!token) {
         setError('You must be logged in to view notifications');
@@ -27,12 +26,10 @@ function Notification() {
       const userId = tokenPayload.userId;
 
       const response = await axios.get(`http://localhost:5003/notifications/user/USER123`, {
-
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
       
       console.log('Notifications response:', response.data); // Debug log
       
@@ -51,18 +48,12 @@ function Notification() {
         setError(err.response?.data?.message || 'Failed to fetch notifications');
       }
       setNotifications([]);
-
       setLoading(false);
     }
   };
 
   const markAsRead = async (notificationId) => {
     try {
-
-      const token = localStorage.getItem('token');
-      await axios.patch(
-        `${process.env.VITE_API_URL}/api/notifications/${notificationId}/read`,
-
       const token = localStorage.getItem('authToken');
       if (!token) {
         setError('You must be logged in to mark notifications as read');
@@ -73,7 +64,6 @@ function Notification() {
       
       const response = await axios.patch(
         `http://localhost:5003/notifications/${notificationId}/read`,
-
         {},
         {
           headers: {
@@ -81,7 +71,6 @@ function Notification() {
           }
         }
       );
-
 
       console.log('Mark as read response:', response.data); // Debug log
 
@@ -92,13 +81,11 @@ function Notification() {
     } catch (err) {
       console.error('Error marking notification as read:', err);
       setError(err.response?.data?.message || 'Failed to mark notification as read. Please try again.');
-
     }
   };
 
   const deleteNotification = async (notificationId) => {
     try {
-
       const token = localStorage.getItem('authToken');
       if (!token) {
         setError('You must be logged in to delete notifications');
@@ -108,12 +95,10 @@ function Notification() {
       console.log('Deleting notification:', notificationId); // Debug log
       
       const response = await axios.delete(`http://localhost:5003/notifications/${notificationId}`, {
-
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
 
       console.log('Delete response:', response.data); // Debug log
 
@@ -133,7 +118,6 @@ function Notification() {
     }
   }, [error]);
 
-
   if (loading) return (
     <UserLayout>
       <div className="flex justify-center items-center h-screen">
@@ -142,8 +126,6 @@ function Notification() {
     </UserLayout>
   );
 
-
-
   return (
     <UserLayout>
       <div className="max-w-4xl mx-auto p-4">
@@ -151,7 +133,6 @@ function Notification() {
           <Bell className="w-6 h-6 text-[#FF7A00] mr-2" />
           <h1 className="text-2xl font-bold">Notifications</h1>
         </div>
-
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
@@ -168,7 +149,6 @@ function Notification() {
           </div>
         )}
 
-
         {notifications.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No notifications to display
@@ -177,9 +157,7 @@ function Notification() {
           <div className="space-y-4">
             {notifications.map((notification) => (
               <div
-
                 key={notification._id}
-
                 className={`p-4 rounded-lg shadow-sm border ${
                   notification.read ? 'bg-white' : 'bg-orange-50'
                 }`}
@@ -202,20 +180,16 @@ function Notification() {
                   <div className="flex space-x-2">
                     {!notification.read && (
                       <button
-
                         onClick={() => markAsRead(notification._id)}
                         className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-
                         title="Mark as read"
                       >
                         <Check className="w-5 h-5 text-green-600" />
                       </button>
                     )}
                     <button
-
                       onClick={() => deleteNotification(notification._id)}
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-
                       title="Delete notification"
                     >
                       <Trash2 className="w-5 h-5 text-red-500" />

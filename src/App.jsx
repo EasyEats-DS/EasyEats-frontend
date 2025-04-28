@@ -22,12 +22,13 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
-
+import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
 import Refund from "./pages/Refund";
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 const App = () => {
+  useDriversSocket();
   return (
     <BrowserRouter>
       <Routes>

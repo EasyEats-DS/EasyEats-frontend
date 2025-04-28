@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import useDriversSocket from "../components/banuka/hooks/useDriversSocket";
 import { useNavigate } from 'react-router-dom';
 
 
 
 
 const Home = () => {
+  const usersSocket = useDriversSocket();
   const navigate = useNavigate();
   const userType = localStorage.getItem('userType');
   const user = userType === 'driver' 
