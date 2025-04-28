@@ -1,10 +1,13 @@
+// src/pages/Order.jsx
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getUserFromToken } from "../lib/auth";
+import { createOrder } from "../lib/api/orders";
 
 const Order = () => {
-  const location = useLocation();
-
-  const { cartItems = [], promotion = 0, note = "" } = location.state || {};
+  const { cartItems = [], promotion = 0, note = "", restaurantId } =
+    useLocation().state || {};
+  const navigate = useNavigate();
 
   const [deliveryAddress, setDeliveryAddress] = useState(
     "SLIIT Campus, Malabe"
@@ -14,90 +17,54 @@ const Order = () => {
   );
   const [deliveryType, setDeliveryType] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [submitting, setSubmitting] = useState(false);
 
   const deliveryFee = deliveryType === "priority" ? 129 : 99;
   const taxes = 62.07;
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   const total = subtotal - promotion + deliveryFee + taxes;
 
-  const handlePlaceOrder = () => {
-    const orderPayload = {
-      userId: "user123",
-      products: cartItems.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      deliveryAddress,
-      dropNote,
-      deliveryType,
-      paymentMethod,
-      totalAmount: total,
-      note,
-    };
+  const handlePlaceOrder = async () => {
+    setSubmitting(true);
+    try {
+      const user = getUserFromToken();
+      const userId = user?.id;
+      const payload = {
+        userId,
+        restaurantId,
+        products: cartItems.map((i) => ({
+          productId: i.id,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        paymentMethod,
+        totalAmount: total,
+        // (optional) you could also send:
+        // deliveryAddress, dropNote, deliveryType, note
+      };
 
-    console.log("Order Placed:", orderPayload);
-    alert("Order placed successfully!");
+      await createOrder(payload);
+
+      if (paymentMethod === "cash") {
+        navigate("/orderConfirmed");
+      } else {
+        navigate("/payment", { state: { orderPayload: payload } });
+      }
+    } catch (err) {
+      console.error("Failed to place order:", err);
+      alert("Unable to place order. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
-      {/* Left: Delivery Info */}
+      {/* Left side: payment method selector */}
       <div className="flex-1 space-y-8">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">Delivery Details</h2>
-          <input
-            value={deliveryAddress}
-            onChange={(e) => setDeliveryAddress(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
-            placeholder="Enter delivery address"
-          />
-          <input
-            value={dropNote}
-            onChange={(e) => setDropNote(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            placeholder="Drop-off note (optional)"
-          />
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">Delivery Options</h2>
-          {[
-            {
-              label: "Priority",
-              value: "priority",
-              note: "10–25 min (+LKR 129)",
-            },
-            { label: "Standard", value: "standard", note: "15–30 min" },
-            { label: "Schedule", value: "schedule", note: "Choose time" },
-          ].map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer mt-3 ${
-                deliveryType === opt.value
-                  ? "border-orange-500 bg-orange-50"
-                  : "border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="delivery"
-                  value={opt.value}
-                  checked={deliveryType === opt.value}
-                  onChange={(e) => setDeliveryType(e.target.value)}
-                  className="accent-orange-500"
-                />
-                <span className="font-medium text-gray-800">{opt.label}</span>
-              </div>
-              <span className="text-gray-500 text-sm">{opt.note}</span>
-            </label>
-          ))}
-        </div>
-
         <div className="bg-white rounded-2xl shadow-md p-6">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">
             Payment Method
@@ -154,7 +121,7 @@ const Order = () => {
         </div>
       </div>
 
-      {/* Right: Order Summary */}
+      {/* Right side: order summary */}
       <div className="flex-1 bg-white rounded-2xl shadow-md p-6 space-y-6">
         <h2 className="text-2xl font-bold">Order Summary</h2>
 
@@ -197,9 +164,12 @@ const Order = () => {
 
         <button
           onClick={handlePlaceOrder}
-          className="w-full mt-6 bg-orange-500 hover:bg-orange-400 text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300"
+          disabled={submitting}
+          className={`w-full mt-6 ${
+            submitting ? "bg-orange-300" : "bg-orange-500 hover:bg-orange-400"
+          } text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300`}
         >
-          Place Order
+          {submitting ? "Placing order…" : "Place Order"}
         </button>
       </div>
     </div>
