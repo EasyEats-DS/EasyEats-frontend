@@ -27,6 +27,15 @@ const ResturantDetails = () => {
   }, [cart]);
 
   const handleAddToCart = (item) => {
+    const prevRest = localStorage.getItem("cartRestaurantId");
+    // if they’re switching restaurants, clear out the old cart
+    if (prevRest && prevRest !== id) {
+    // optional: confirm("Switch restaurant? Cart will be cleared.")
+    setCart([]);
+    localStorage.removeItem("cartItems");
+  }
+  localStorage.setItem("cartRestaurantId", id);
+
     const updated = [...cart];
     const idx = updated.findIndex(ci => ci.id === item.id);
     if (idx > -1) {
@@ -41,6 +50,7 @@ const ResturantDetails = () => {
       });
     }
     setCart(updated);
+    localStorage.setItem('cartRestaurantId', id);
   };
 
   const handleRemoveFromCart = (item) => {
