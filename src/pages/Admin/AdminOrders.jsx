@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Clock, MapPin } from 'lucide-react';
+import { Search, Filter, Clock } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import FoodieCard from '../../components/FoodieCard';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
-import { fetchAllOrders } from '../../lib/api/orders'; // ✅ Import API function
+import { fetchAllOrders, updateOrderStatus } from '../../lib/api/orders'; // ✅ Also import updateOrderStatus
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -31,7 +31,7 @@ const AdminOrders = () => {
   }, []);
 
   const filteredOrders = orders
-    .filter((order) => 
+    .filter((order) =>
       order._id.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((order) => statusFilter === 'all' || order.status === statusFilter);
@@ -40,38 +40,44 @@ const AdminOrders = () => {
     setSelectedOrder(order);
   };
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+
+      // Update both orders array and selectedOrder
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+
+      if (selectedOrder && selectedOrder._id === orderId) {
+        setSelectedOrder((prevSelected) => ({
+          ...prevSelected,
+          status: newStatus,
+        }));
+      }
+
+      alert("Order status updated successfully!");
+
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      alert("Failed to update order status. Please try again.");
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
-        return (
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
-            Pending
-          </span>
-        );
+        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
       case 'processing':
-        return (
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-            Processing
-          </span>
-        );
+        return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Processing</span>;
       case 'shipped':
-        return (
-          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-            Shipped
-          </span>
-        );
+        return <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Shipped</span>;
       case 'delivered':
-        return (
-          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            Delivered
-          </span>
-        );
+        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Delivered</span>;
       case 'cancelled':
-        return (
-          <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-            Cancelled
-          </span>
-        );
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelled</span>;
       default:
         return null;
     }
@@ -92,7 +98,6 @@ const AdminOrders = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full sm:w-64"
                 />
-
                 <div className="relative min-w-[150px]">
                   <select
                     value={statusFilter}
@@ -161,22 +166,35 @@ const AdminOrders = () => {
             </div>
           </div>
 
-          {/* Order Details */}
+          {/* Selected Order Details */}
           <div>
             {selectedOrder ? (
-              <FoodieCard interactive={false} className="sticky top-24">
+              <FoodieCard interactive={false} className="sticky top-24 space-y-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-lg">Order #{selectedOrder._id.slice(0, 6)}...</h3>
                   {getStatusBadge(selectedOrder.status)}
                 </div>
 
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium text-foodie-gray-dark mb-2">Order Info</h4>
-                    <p>User ID: {selectedOrder.userId}</p>
-                    <p>Total Amount: LKR {selectedOrder.totalAmount.toFixed(2)}</p>
-                    <p>Created At: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                  </div>
+                <div>
+                  <h4 className="font-medium text-foodie-gray-dark mb-2">Order Info</h4>
+                  <p>User ID: {selectedOrder.userId}</p>
+                  <p>Total Amount: LKR {selectedOrder.totalAmount.toFixed(2)}</p>
+                  <p>Created At: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-foodie-gray-dark mb-2">Update Status</h4>
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => handleStatusChange(selectedOrder._id, e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
                 </div>
               </FoodieCard>
             ) : (

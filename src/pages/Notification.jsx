@@ -14,25 +14,66 @@ function Notification() {
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.VITE_API_URL}/api/notifications/getallnotifications`, {
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('You must be logged in to view notifications');
+        setLoading(false);
+        return;
+      }
+
+      // Decode the JWT token to get the user ID
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const userId = tokenPayload.userId;
+
+      const response = await axios.get(`http://localhost:5003/notifications/user/USER123`, {
+
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setNotifications(response.data);
+
+      
+      console.log('Notifications response:', response.data); // Debug log
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
+      const notifications = response.data?.data?.notifications || [];
+      setNotifications(notifications);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
+      if (err.code === 'ERR_NETWORK') {
+        setError('Cannot connect to notification server. Please check your connection.');
+      } else {
+        setError(err.response?.data?.message || 'Failed to fetch notifications');
+      }
+      setNotifications([]);
+
       setLoading(false);
     }
   };
 
   const markAsRead = async (notificationId) => {
     try {
+
       const token = localStorage.getItem('token');
       await axios.patch(
         `${process.env.VITE_API_URL}/api/notifications/${notificationId}/read`,
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('You must be logged in to mark notifications as read');
+        return;
+      }
+      
+      console.log('Marking notification as read:', notificationId); // Debug log
+      
+      const response = await axios.patch(
+        `http://localhost:5003/notifications/${notificationId}/read`,
+
         {},
         {
           headers: {
@@ -40,27 +81,58 @@ function Notification() {
           }
         }
       );
+
+
+      console.log('Mark as read response:', response.data); // Debug log
+
+      // Update notification in state using _id
       setNotifications(notifications.map(notif => 
-        notif.id === notificationId ? { ...notif, read: true } : notif
+        notif._id === notificationId ? { ...notif, read: true } : notif
       ));
     } catch (err) {
       console.error('Error marking notification as read:', err);
+      setError(err.response?.data?.message || 'Failed to mark notification as read. Please try again.');
+
     }
   };
 
   const deleteNotification = async (notificationId) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.VITE_API_URL}/api/notifications/${notificationId}`, {
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setError('You must be logged in to delete notifications');
+        return;
+      }
+      
+      console.log('Deleting notification:', notificationId); // Debug log
+      
+      const response = await axios.delete(`http://localhost:5003/notifications/${notificationId}`, {
+
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      setNotifications(notifications.filter(notif => notif.id !== notificationId));
+
+
+      console.log('Delete response:', response.data); // Debug log
+
+      // Update notifications in state using _id
+      setNotifications(notifications.filter(notif => notif._id !== notificationId));
     } catch (err) {
       console.error('Error deleting notification:', err);
+      setError(err.response?.data?.message || 'Failed to delete notification. Please try again.');
     }
   };
+
+  // Clear error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
 
   if (loading) return (
     <UserLayout>
@@ -70,11 +142,7 @@ function Notification() {
     </UserLayout>
   );
 
-  if (error) return (
-    <UserLayout>
-      <div className="text-red-500 text-center p-4">{error}</div>
-    </UserLayout>
-  );
+
 
   return (
     <UserLayout>
@@ -84,6 +152,23 @@ function Notification() {
           <h1 className="text-2xl font-bold">Notifications</h1>
         </div>
 
+
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+
         {notifications.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No notifications to display
@@ -92,7 +177,9 @@ function Notification() {
           <div className="space-y-4">
             {notifications.map((notification) => (
               <div
-                key={notification.id}
+
+                key={notification._id}
+
                 className={`p-4 rounded-lg shadow-sm border ${
                   notification.read ? 'bg-white' : 'bg-orange-50'
                 }`}
@@ -115,16 +202,20 @@ function Notification() {
                   <div className="flex space-x-2">
                     {!notification.read && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="p-1 hover:bg-gray-100 rounded-full"
+
+                        onClick={() => markAsRead(notification._id)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+
                         title="Mark as read"
                       >
                         <Check className="w-5 h-5 text-green-600" />
                       </button>
                     )}
                     <button
-                      onClick={() => deleteNotification(notification.id)}
-                      className="p-1 hover:bg-gray-100 rounded-full"
+
+                      onClick={() => deleteNotification(notification._id)}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+
                       title="Delete notification"
                     >
                       <Trash2 className="w-5 h-5 text-red-500" />

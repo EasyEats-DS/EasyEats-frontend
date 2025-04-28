@@ -22,7 +22,9 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
-import StripePaymentInterface from "./pages/StripePaymentInterface";
+
+import Refund from "./pages/Refund";
+// import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 const App = () => {
@@ -51,6 +53,7 @@ const App = () => {
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/orderConfirmed" element={<ProtectedRoute><OrderConfirmed /></ProtectedRoute>} />
         <Route path="/notification" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
+        <Route path="/refund" element={<ProtectedRoute><Refund /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard/></ProtectedRoute>} />
         <Route path="/admin/menu" element={<ProtectedRoute><AdminMenu/></ProtectedRoute>} />
         <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders/></ProtectedRoute>} />
@@ -58,8 +61,16 @@ const App = () => {
         <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
-        <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
-        <Route path="/stripe" element={<ProtectedRoute><StripePaymentInterface/></ProtectedRoute>} />
+
+<Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        {/* <Route path="/admin/restaurant-creation" element={<ProtectedRoute><AdminRestaurantCreation/></ProtectedRoute>} /> */}
+
+        {/* Fallback Route */}
+<Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        {/* <Route path="/admin/restaurant-creation" element={<ProtectedRoute><AdminRestaurantCreation/></ProtectedRoute>} /> */}
+
+        {/* Fallback Route */}
+
       </Routes>
       <ToastContainer/>
     </BrowserRouter>

@@ -1,29 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import foodImage from "../assets/food_5.png";
-import resturantImage from "../assets/resturant.jpeg";
 
 const Cart = () => {
   const navigate = useNavigate();
 
-  const [cartItems, setCartItems] = useState([
-    {
-      id: "food001",
-      name: "Chicken Lasagna",
-      price: 205.93,
-      quantity: 1,
-      image: foodImage,
-    },
-    {
-      id: "food001",
-      name: "Chicken Lasagna",
-      price: 205.93,
-      quantity: 1,
-      image: foodImage,
-    },
-  ]);
+  // load initial cart from localStorage
+  const [cartItems, setCartItems] = useState(() =>
+    JSON.parse(localStorage.getItem("cartItems") || "[]")
+  );
+
+  // load restaurantId that we stored when user first added to cart
+  const [restaurantId] = useState(() =>
+    localStorage.getItem("cartRestaurantId")
+ );
 
   const [loading, setLoading] = useState(false);
+
+  // persist whenever cartItems changes
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (cartItems.length === 0) {
+      localStorage.removeItem("cartRestaurantId");
+    }
+  }, [cartItems]);
 
   const promotion = 133.85;
   const subtotal = cartItems.reduce(
@@ -38,6 +37,7 @@ const Cart = () => {
         state: {
           cartItems,
           promotion,
+          restaurantId,
         },
       });
     }, 1000);
@@ -67,17 +67,7 @@ const Cart = () => {
     <div className="px-4 py-6 space-y-6 h-[calc(100vh-60px)] overflow-y-auto">
       {/* Restaurant Info */}
       <div className="flex items-center mb-6">
-        <img
-          src={resturantImage}
-          alt="Restaurant"
-          className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-gray-300"
-        />
-        <div>
-          <h1 className="text-lg font-bold text-gray-900">Caravan Fresh</h1>
-          <p className="text-gray-500 text-xs">
-            No. 314B, Kaduwela Road, Koswatta
-          </p>
-        </div>
+        <h1 className="text-lg font-bold text-gray-900">Your Cart</h1>
       </div>
 
       {/* Cart Items */}
@@ -85,7 +75,7 @@ const Cart = () => {
         {cartItems.length > 0 ? (
           cartItems.map((item, index) => (
             <div
-              key={item.id}
+              key={`${item.id}-${index}`}
               className="flex justify-between items-center border-b pb-3 last:border-b-0 last:pb-0"
             >
               <div className="flex items-center gap-3">
