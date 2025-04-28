@@ -1,4 +1,5 @@
 import React from "react";
+import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
@@ -21,9 +22,11 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
+
 import Refund from "./pages/Refund";
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
+import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 const App = () => {
   return (
     <BrowserRouter>
@@ -33,6 +36,11 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
+
+
+        <Route path="/driver/map" element={<DeliveryTrackingPage userRole="driver" />} />
+        <Route path="/customer/map" element={<DeliveryTrackingPage userRole="customer" />} />
+
 
         {/* Protected Routes */}
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
@@ -53,6 +61,7 @@ const App = () => {
         <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
         <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
         <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+
 <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
         {/* <Route path="/admin/restaurant-creation" element={<ProtectedRoute><AdminRestaurantCreation/></ProtectedRoute>} /> */}
 
@@ -63,6 +72,7 @@ const App = () => {
         {/* Fallback Route */}
 
       </Routes>
+      <ToastContainer/>
     </BrowserRouter>
   );
 };
