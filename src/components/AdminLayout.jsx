@@ -17,6 +17,7 @@ const AdminLayout = ({ children, title }) => {
     { icon: Settings, label: 'Restaurant Settings', path: '/admin/settings' },
     {icon: ShoppingCart, label: 'Inventory', path: '/admin/inventory' },
     { icon: User, label: 'Profile', path: '/admin/profile' },
+    // { icon: X, label: 'Restaurant Creation', path: '/admin/restaurant-creation' },
   ];
 
   return (
