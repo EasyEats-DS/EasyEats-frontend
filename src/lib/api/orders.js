@@ -19,6 +19,13 @@ export const fetchAllOrders = async (page = 1, limit = 10) => {
   return response.data.data.orders; 
 };
 
+// Fetch all orders (no pagination)
+export const fetchAllOrdersNoPagination = async () => {
+  const response = await axios.get(`${API_URL}/all`);
+  console.log("Full API Response (no pagination):", response.data);
+  return response.data.orders;
+};
+
 // Fetch orders by user ID
 export const fetchOrdersByUserId = async (userId) => {
     const response = await axios.get(`${API_URL}/user/${userId}`);
