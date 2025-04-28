@@ -74,7 +74,7 @@ const App = () => {
           <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
         </Routes>
       </Elements>
->
+
     </BrowserRouter>
   );
 };
