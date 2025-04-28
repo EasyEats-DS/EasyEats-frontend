@@ -2,6 +2,12 @@ import axios from "axios";
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/orders`;
 
+// Create a new order
+export const createOrder = async (orderPayload) => {
+  const response = await axios.post(API_URL, orderPayload);
+  return response.data; // the newly created order
+};
+
 // Fetch all orders with pagination
 export const fetchAllOrders = async (page = 1, limit = 10) => {
   const response = await axios.get(API_URL, {
