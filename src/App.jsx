@@ -20,34 +20,46 @@ import AdminOrders from "./pages/Admin/AdminOrders";
 import AdminEarnings from "./pages/Admin/AdminEarnings";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ViewOrders from "./pages/viewOrders";
+import StripePaymentInterface from "./pages/StripePaymentInterface";
 
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/restaurant" element={<Resturant />} />
-        <Route path="/cart" element={<Cart />} />
+
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/payment" element={<Payment />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        <Route path="/restaurant/:id" element={<ResturantDetails />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/orderConfirmed" element={<OrderConfirmed />} />
-        <Route path="/notification" element={<Notification />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
-        <Route path="/admin/menu" element={<AdminMenu/>} />
-        <Route path="/admin/orders" element={<AdminOrders/>} />
-        <Route path="/admin/earnings" element={<AdminEarnings/>} />
-        <Route path="/admin/settings" element={<AdminSettings/>} />
-        <Route path="/admin/profile" element={<AdminProfile/>} />
+
 
         <Route path="/driver/map" element={<DeliveryTrackingPage userRole="driver" />} />
         <Route path="/customer/map" element={<DeliveryTrackingPage userRole="customer" />} />
+
+
+        {/* Protected Routes */}
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/restaurant" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
+        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/restaurant/:id" element={<ProtectedRoute><ResturantDetails /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/orderConfirmed" element={<ProtectedRoute><OrderConfirmed /></ProtectedRoute>} />
+        <Route path="/notification" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard/></ProtectedRoute>} />
+        <Route path="/admin/menu" element={<ProtectedRoute><AdminMenu/></ProtectedRoute>} />
+        <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders/></ProtectedRoute>} />
+        <Route path="/admin/earnings" element={<ProtectedRoute><AdminEarnings/></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
+        <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
+        <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
+        <Route path="/stripe" element={<ProtectedRoute><StripePaymentInterface/></ProtectedRoute>} />
       </Routes>
       <ToastContainer/>
     </BrowserRouter>

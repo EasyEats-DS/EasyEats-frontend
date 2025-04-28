@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ChevronRight } from 'lucide-react';
 import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
 import axios from 'axios';
+
 import handleLoginSuccess from '../utils/handleLoginSuccess';
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,31 +15,31 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+
   
   const handleLogin = async (e) => {
     e.preventDefault();
   
     setIsLoading(true);
+
+
     try {
-      const res = await axios.post(`${BASE_URL}/auth/login`, {
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
-      console.log("Login response111:", res.data.data.token); // Log the response data
-
-      alert("Login Successful!");
-      handleLoginSuccess(res.data.data.user, res.data.data.token, navigate);
-      
-     
+      console.log("Login successful:", response.data);
+      const { token } = response.data.data;
+      if (token) {
+        localStorage.setItem("authToken", token);
+      }
+      navigate("/");
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.msg || "Login failed");
-    }
-    
-    setTimeout(() => {
+      console.error("Login error:", err);
+    } finally {
+
       setIsLoading(false);
-      navigate('/');
-    }, 1500);
+    }
   };
 
   return (
