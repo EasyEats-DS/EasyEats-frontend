@@ -8,11 +8,20 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState(() =>
     JSON.parse(localStorage.getItem("cartItems") || "[]")
   );
+
+  // load restaurantId that we stored when user first added to cart
+  const [restaurantId] = useState(() =>
+    localStorage.getItem("cartRestaurantId")
+ );
+
   const [loading, setLoading] = useState(false);
 
   // persist whenever cartItems changes
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (cartItems.length === 0) {
+      localStorage.removeItem("cartRestaurantId");
+    }
   }, [cartItems]);
 
   const promotion = 133.85;
@@ -28,6 +37,7 @@ const Cart = () => {
         state: {
           cartItems,
           promotion,
+          restaurantId,
         },
       });
     }, 1000);
