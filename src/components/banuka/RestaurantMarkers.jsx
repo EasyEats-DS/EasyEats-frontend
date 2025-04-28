@@ -13,6 +13,7 @@ const restaurantIcon = new L.Icon({
 
 export default function RestaurantMarkers({ restaurants }) {
   const [locations, setLocations] = useState([]);
+  console.log("RestaurantMarkers restaurants-:", restaurants);
 
   useEffect(() => {
     async function fetchLocations() {

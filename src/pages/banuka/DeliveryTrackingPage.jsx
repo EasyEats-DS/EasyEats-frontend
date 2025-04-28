@@ -123,10 +123,20 @@ const DeliveryTrackingPage = ({ userRole }) => {
         }
       );
 
-      setDeliveries(prev => 
-        prev.map(d => d._id === deliveryId ? response.data : d)
-      );
-      setSelectedDelivery(response.data);
+      console.log("Status update response:", response); // Log the response data
+
+     // ✅ Only update the status field locally
+    setDeliveries(prev =>
+      prev.map(d =>
+        // console.log("delivwerymap",d),
+        d._id === deliveryId ? { ...d, deliveryStatus: newStatus } : d
+      )
+    );
+
+    // ✅ If selectedDelivery is the updated one, update its status too
+    if (selectedDelivery && selectedDelivery._id === deliveryId) {
+      setSelectedDelivery(prev => ({ ...prev, deliveryStatus: newStatus }));
+    }
       
       // For customers, refresh the list after status update
       if (userRole === 'customer') {
