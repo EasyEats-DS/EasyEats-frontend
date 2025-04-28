@@ -1,120 +1,114 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Heart, Plus, Minus } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import FoodieButton from '../components/FoodieButton';
 import FoodieCard from '../components/FoodieCard';
 import { restaurantService } from '../lib/api/resturants';
 
 const ResturantDetails = () => {
-  const { id } = useParams(); // Get restaurant ID from URL params
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [restaurant, setRestaurant] = useState(null);
   const [menuCategories, setMenuCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState({});
   const [error, setError] = useState(null);
-  
+
+  // load cart from localStorage
+  const [cart, setCart] = useState(() => {
+    return JSON.parse(localStorage.getItem('cartItems') || '[]');
+  });
+
+  // whenever cart changes, persist back to localStorage
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+  }, [cart]);
+
+  const handleAddToCart = (item) => {
+    const updated = [...cart];
+    const idx = updated.findIndex(ci => ci.id === item.id);
+    if (idx > -1) {
+      updated[idx].quantity += 1;
+    } else {
+      updated.push({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        quantity: 1
+      });
+    }
+    setCart(updated);
+  };
+
+  const handleRemoveFromCart = (item) => {
+    const updated = [...cart];
+    const idx = updated.findIndex(ci => ci.id === item.id);
+    if (idx > -1) {
+      updated[idx].quantity -= 1;
+      if (updated[idx].quantity <= 0) {
+        updated.splice(idx, 1);
+      }
+      setCart(updated);
+    }
+  };
+
+  const getItemQuantity = (itemId) => {
+    const found = cart.find(ci => ci.id === itemId);
+    return found ? found.quantity : 0;
+  };
+
+  const getTotalItems = () =>
+    cart.reduce((sum, ci) => sum + ci.quantity, 0);
+
   useEffect(() => {
     const fetchRestaurantData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch restaurant details
         const restaurantData = await restaurantService.getRestaurantById(id);
         setRestaurant(restaurantData);
-        
-        // Fetch menu items
+
         const menuResponse = await restaurantService.getRestaurantMenu(id);
-        
-        // Process menu data based on the API response format
-        // Group items by category
-        if (menuResponse) {
-          const menuItems = menuResponse.menu || [];
-          
-          // Get unique categories
-          const categories = [...new Set(menuItems.map(item => item.category))];
-          
-          // Create the menu categories structure expected by the component
-          const formattedCategories = categories.map((category, index) => {
-            return {
-              id: index + 1,
-              name: category,
-              items: menuItems
-                .filter(item => item.category === category)
-                .map(item => ({
-                  id: item._id,
-                  name: item.name,
-                  description: item.description,
-                  price: item.price,
-                  image: item.image || `/api/placeholder/400/300?text=${encodeURIComponent(item.name)}`,
-                  popular: item.popular || false,
-                  isAvailable: item.isAvailable
-                }))
-            };
-          });
-          
-          setMenuCategories(formattedCategories);
-          
-          // Set the first category as active by default
-          if (formattedCategories.length > 0) {
-            setActiveCategory(formattedCategories[0].id);
-          }
+        const menuItems = menuResponse.menu || [];
+
+        const categories = Array.from(
+          new Set(menuItems.map(item => item.category))
+        );
+        const formattedCategories = categories.map((category, index) => ({
+          id: index + 1,
+          name: category,
+          items: menuItems
+            .filter(item => item.category === category)
+            .map(item => ({
+              id: item._id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              image:
+                item.image ||
+                `/api/placeholder/400/300?text=${encodeURIComponent(item.name)}`,
+              popular: item.popular || false,
+              isAvailable: item.isAvailable
+            }))
+        }));
+
+        setMenuCategories(formattedCategories);
+        if (formattedCategories.length > 0) {
+          setActiveCategory(formattedCategories[0].id);
         }
-        
-        setLoading(false);
       } catch (err) {
-        setError('Failed to load restaurant data');
-        setLoading(false);
         console.error('Error loading restaurant data:', err);
+        setError('Failed to load restaurant data');
+      } finally {
+        setLoading(false);
       }
     };
-    
-    if (id) {
-      fetchRestaurantData();
-    }
+
+    if (id) fetchRestaurantData();
   }, [id]);
-  
-  const handleAddToCart = (item) => {
-    setCart((prev) => ({
-      ...prev,
-      [item.id]: (prev[item.id] || 0) + 1,
-    }));
-  };
-  
-  const handleRemoveFromCart = (item) => {
-    setCart((prev) => {
-      const newCart = { ...prev };
-      if (newCart[item.id] > 0) {
-        newCart[item.id] -= 1;
-        if (newCart[item.id] === 0) {
-          delete newCart[item.id];
-        }
-      }
-      return newCart;
-    });
-  };
-  
-  const getItemQuantity = (itemId) => {
-    return cart[itemId] || 0;
-  };
-  
-  const getTotalItems = () => {
-    return Object.values(cart).reduce((a, b) => a + b, 0);
-  };
-  
-  // Format address object to string
-  const formatAddress = (addressObj) => {
-    if (!addressObj) return '';
-    
-    if (typeof addressObj === 'string') {
-      return addressObj;
-    }
-    
-    const { street, city, state, zipCode, country } = addressObj;
-    return [street, city, state, zipCode, country].filter(Boolean).join(', ');
-  };
-  
+
   if (loading) {
     return (
       <UserLayout>
@@ -150,21 +144,35 @@ const ResturantDetails = () => {
     );
   }
 
+  // preserve your exact UI below:
+
   return (
     <UserLayout title={restaurant.name || restaurant.restaurantName}>
       {/* Restaurant Header */}
       <div className="relative h-64 rounded-2xl overflow-hidden animate-fade-in">
-        <img 
-          src={restaurant.coverImage || restaurant.image || `/api/placeholder/1200/400?text=${encodeURIComponent(restaurant.name || restaurant.restaurantName)}`} 
+        <img
+          src={
+            restaurant.coverImage ||
+            restaurant.image ||
+            `/api/placeholder/1200/400?text=${encodeURIComponent(
+              restaurant.name || restaurant.restaurantName
+            )}`
+          }
           alt={restaurant.name || restaurant.restaurantName}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        
+
         <div className="absolute bottom-0 left-0 p-6 flex items-end space-x-4">
           <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
-            <img 
-              src={restaurant.logo || restaurant.image || `/api/placeholder/200/200?text=${encodeURIComponent(restaurant.name || restaurant.restaurantName)}`} 
+            <img
+              src={
+                restaurant.logo ||
+                restaurant.image ||
+                `/api/placeholder/200/200?text=${encodeURIComponent(
+                  restaurant.name || restaurant.restaurantName
+                )}`
+              }
               alt={`${restaurant.name || restaurant.restaurantName} logo`}
               className="w-full h-full object-cover"
             />
@@ -183,17 +191,29 @@ const ResturantDetails = () => {
               </div>
               <div className="flex items-center">
                 <MapPin className="w-4 h-4" />
-                <span className="ml-1 truncate max-w-[200px]">{formatAddress(restaurant.address)}</span>
+                <span className="ml-1 truncate max-w-[200px]">
+                  {typeof restaurant.address === 'string'
+                    ? restaurant.address
+                    : [
+                        restaurant.address.street,
+                        restaurant.address.city,
+                        restaurant.address.state,
+                        restaurant.address.zipCode,
+                        restaurant.address.country
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}
+                </span>
               </div>
             </div>
           </div>
         </div>
-        
+
         <button className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm p-2 rounded-full hover:bg-white/20 transition-colors">
           <Heart className="w-6 h-6 text-white" />
         </button>
       </div>
-      
+
       <div className="mt-6 flex flex-col md:flex-row md:space-x-8">
         {/* Category Navigation */}
         <aside className="md:w-1/4 mb-6 md:mb-0">
@@ -205,8 +225,8 @@ const ResturantDetails = () => {
                   <li key={category.id}>
                     <button
                       className={`w-full text-left py-2 px-4 rounded-lg transition-colors ${
-                        activeCategory === category.id 
-                          ? 'bg-[#FF7A00] text-white' 
+                        activeCategory === category.id
+                          ? 'bg-[#FF7A00] text-white'
                           : 'hover:bg-gray-100 text-gray-700'
                       }`}
                       onClick={() => setActiveCategory(category.id)}
@@ -221,74 +241,76 @@ const ResturantDetails = () => {
             )}
           </div>
         </aside>
-        
+
         {/* Menu Items */}
         <div className="flex-1">
           {menuCategories.length > 0 ? (
-            menuCategories.map((category) => (
-              <div 
-                key={category.id}
-                id={`category-${category.id}`}
-                className={`mb-8 animate-fade-in ${activeCategory === category.id ? '' : 'hidden md:block'}`}
-              >
-                <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-                {category.items && category.items.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {category.items.map((item) => (
-                      <FoodieCard key={item.id} interactive={false} className="flex overflow-hidden">
-                        <div className="flex-1 p-4">
-                          {item.popular && (
-                            <span className="inline-block bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full mb-2">
-                              Popular
-                            </span>
-                          )}
-                          <h3 className="font-bold text-lg">{item.name}</h3>
-                          <p className="text-gray-600 text-sm mb-2">{item.description}</p>
-                          <div className="flex items-center justify-between mt-auto">
-                            <p className="font-bold text-gray-800">${parseFloat(item.price).toFixed(2)}</p>
-                            <div className="flex items-center">
-                              {getItemQuantity(item.id) > 0 ? (
-                                <div className="flex items-center">
-                                  <button 
-                                    onClick={() => handleRemoveFromCart(item)}
-                                    className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
-                                  >
-                                    <Minus className="w-5 h-5" />
-                                  </button>
-                                  <span className="px-3 font-medium">{getItemQuantity(item.id)}</span>
-                                  <button 
+            menuCategories.map((category) =>
+              activeCategory === category.id ? (
+                <div key={category.id} className="mb-8 animate-fade-in">
+                  <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
+                  {category.items.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {category.items.map((item) => (
+                        <FoodieCard key={item.id} interactive={false} className="flex overflow-hidden">
+                          <div className="flex-1 p-4">
+                            {item.popular && (
+                              <span className="inline-block bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full mb-2">
+                                Popular
+                              </span>
+                            )}
+                            <h3 className="font-bold text-lg">{item.name}</h3>
+                            <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                            <div className="flex items-center justify-between mt-auto">
+                              <p className="font-bold text-gray-800">
+                                LKR {item.price.toFixed(2)}
+                              </p>
+                              <div className="flex items-center">
+                                {getItemQuantity(item.id) > 0 ? (
+                                  <div className="flex items-center">
+                                    <button
+                                      onClick={() => handleRemoveFromCart(item)}
+                                      className="p-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                    >
+                                      <Minus className="w-5 h-5" />
+                                    </button>
+                                    <span className="px-3 font-medium">
+                                      {getItemQuantity(item.id)}
+                                    </span>
+                                    <button
+                                      onClick={() => handleAddToCart(item)}
+                                      className="p-1 rounded-full bg-[#FF7A00] text-white"
+                                    >
+                                      <Plus className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
                                     onClick={() => handleAddToCart(item)}
-                                    className="p-1 rounded-full bg-[#FF7A00] text-white"
+                                    className="bg-gray-100 hover:bg-[#FF7A00] hover:text-white transition-colors text-gray-700 px-3 py-1 rounded-full flex items-center"
                                   >
-                                    <Plus className="w-5 h-5" />
+                                    <Plus className="w-4 h-4 mr-1" /> Add
                                   </button>
-                                </div>
-                              ) : (
-                                <button 
-                                  onClick={() => handleAddToCart(item)}
-                                  className="bg-gray-100 hover:bg-[#FF7A00] hover:text-white transition-colors text-gray-700 px-3 py-1 rounded-full flex items-center"
-                                >
-                                  <Plus className="w-4 h-4 mr-1" /> Add
-                                </button>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="w-1/3 h-auto">
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </FoodieCard>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500">No items available in this category</p>
-                )}
-              </div>
-            ))
+                          <div className="w-1/3 h-auto">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </FoodieCard>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No items available in this category</p>
+                  )}
+                </div>
+              ) : null
+            )
           ) : (
             <div className="text-center py-10">
               <p className="text-gray-500">No menu items available for this restaurant</p>
@@ -296,13 +318,14 @@ const ResturantDetails = () => {
           )}
         </div>
       </div>
-      
+
       {/* Cart Button */}
       {getTotalItems() > 0 && (
         <div className="fixed bottom-20 left-0 right-0 flex justify-center z-10 animate-fade-in">
-          <FoodieButton 
+          <FoodieButton
             className="px-8 py-4 shadow-lg"
             size="lg"
+            onClick={() => navigate('/cart')}
           >
             View Cart ({getTotalItems()} items)
           </FoodieButton>
