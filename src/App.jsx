@@ -1,4 +1,5 @@
 import React from "react";
+import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
@@ -20,6 +21,7 @@ import AdminEarnings from "./pages/Admin/AdminEarnings";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 
+import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 const App = () => {
   return (
     <BrowserRouter>
@@ -43,7 +45,11 @@ const App = () => {
         <Route path="/admin/earnings" element={<AdminEarnings/>} />
         <Route path="/admin/settings" element={<AdminSettings/>} />
         <Route path="/admin/profile" element={<AdminProfile/>} />
+
+        <Route path="/driver/map" element={<DeliveryTrackingPage userRole="driver" />} />
+        <Route path="/customer/map" element={<DeliveryTrackingPage userRole="customer" />} />
       </Routes>
+      <ToastContainer/>
     </BrowserRouter>
   );
 };
