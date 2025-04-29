@@ -25,15 +25,40 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
 import Refund from "./pages/Refund";
 import StripePayment from "./pages/Stripepayment";
-// import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
+import StripePaymentInterface from "./pages/StripePaymentInterface";
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+// Initialize Stripe with options
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+if (!STRIPE_PUBLISHABLE_KEY) {
+  console.error('Error: Stripe publishable key is missing. Make sure VITE_STRIPE_PUBLISHABLE_KEY is set in your .env file.');
+}
+
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+
+const stripeOptions = {
+  locale: 'en',
+  fonts: [{
+    cssSrc: 'https://fonts.googleapis.com/css?family=Roboto:400,500,600',
+  }],
+  appearance: {
+    theme: 'stripe',
+    variables: {
+      colorPrimary: '#FF7A00',
+      colorBackground: '#ffffff',
+      colorText: '#32325d',
+      colorDanger: '#fa755a',
+      fontFamily: 'Roboto, sans-serif',
+      spacingUnit: '4px',
+      borderRadius: '4px',
+    },
+  },
+};
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Elements stripe={stripePromise}>
+      <Elements stripe={stripePromise} options={stripeOptions}>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
@@ -60,6 +85,7 @@ const App = () => {
           <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
           <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
           <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
+          <Route path="/stripe-payment-interface" element={<ProtectedRoute><StripePaymentInterface /></ProtectedRoute>} />
         </Routes>
       </Elements>
     </BrowserRouter>
