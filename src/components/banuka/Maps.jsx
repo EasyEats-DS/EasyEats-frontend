@@ -9,6 +9,8 @@ import CustomerMarker from './CustomerMarker';
 import L from 'leaflet';
 import axios from 'axios';
 
+import { useSocket } from './SocketContext';
+
 // Fix default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -23,7 +25,8 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   const [customerIcon, setCustomerIcon] = useState(null);
   const [userMarker, setUserMarker] = useState(null);
   const [highlightedDriverId, setHighlightedDriverId] = useState(null);
-  const { drivers, isConnected, availableDrivers, restaurants, customerLocation, setCustomerLocation, sendLiveLocation } = useDriversSocket();
+  //const { drivers, isConnected, availableDrivers, restaurants, customerLocation, setCustomerLocation, sendLiveLocation } = useDriversSocket();
+  const { drivers, isConnected, availableDrivers, restaurants, customerLocation, setCustomerLocation, sendLiveLocation } = useSocket(); // Get the status_update function from the context
   const [routePath, setRoutePath] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -33,6 +36,7 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   console.log("Map component mounted");
+  console.log("ARes",restaurants);
   console.log("availableDriversmap: ", availableDrivers);
   const token = localStorage.getItem('authToken');
   console.log("token_______:", token);
@@ -51,6 +55,7 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
 
   // Set initial user location and driver icon
   useEffect(() => {
+    
     console.log("maps___________")
     console.log("availableDriversN: ",availableDrivers)
     const currentUser = userRole === 'driver' ? JSON.parse(localStorage.getItem('driver')) : JSON.parse(localStorage.getItem('Customer'));

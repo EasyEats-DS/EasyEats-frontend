@@ -184,29 +184,62 @@ const DeliveryList = ({
                 </p>
                 
                 {expandedDelivery === delivery._id && (
-                  <div className="delivery-details">
-                    {userRole === 'driver' && (
-                      <p className="info-row">
-                        <span className="info-label">Restaurant:</span>
-                        <span>{delivery.restaurantId?.name || 'Unknown'}</span>
-                      </p>
-                    )}
-                    <p className="info-row">
-                      <span className="info-label">Created:</span>
-                      <span>{new Date(delivery.createdAt).toLocaleString()}</span>
-                    </p>
-                    <p className="info-row">
-                      <span className="info-label">Status:</span>
-                      <span className="status-text">{delivery.deliveryStatus.replace('_', ' ')}</span>
-                    </p>
-                    {delivery.driverId && userRole === 'customer' && (
-                      <p className="info-row">
-                        <span className="info-label">Driver:</span>
-                        <span>{delivery.driverId.firstName || 'Not assigned'}</span>
-                      </p>
-                    )}
-                  </div>
-                )}
+  <div className="delivery-details">
+    {userRole === 'driver' && (
+      <p className="info-row">
+        <span className="info-label">Restaurant:</span>
+        <span>{delivery.restaurantId?.name || 'Unknown'}</span>
+      </p>
+    )}
+    <p className="info-row">
+      <span className="info-label">Created:</span>
+      <span>{new Date(delivery.createdAt).toLocaleString()}</span>
+    </p>
+    <p className="info-row">
+      <span className="info-label">Status:</span>
+      <span className="status-text">{delivery.deliveryStatus.replace('_', ' ')}</span>
+    </p>
+    
+    {/* Payment Method */}
+    {delivery.paymentMethod && (
+      <p className="info-row">
+        <span className="info-label">Payment Method:</span>
+        <span>{delivery.paymentMethod}</span>
+      </p>
+    )}
+
+    {/* Total Price */}
+    {delivery.totalPrice && (
+      <p className="info-row">
+        <span className="info-label">Total Price:</span>
+        <span>${delivery.totalPrice.toFixed(2)}</span>
+      </p>
+    )}
+
+    {/* Products */}
+    {delivery.products?.length > 0 && (
+      <div className="product-list">
+        <span className="info-label">Products:</span>
+        <ul>
+          {delivery.products.map((product, index) => (
+            <li key={index}>
+              {product.productId} - {product.quantity} x ${product.price.toFixed(2)}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Driver Info */}
+    {delivery.driverId && userRole === 'customer' && (
+      <p className="info-row">
+        <span className="info-label">Driver:</span>
+        <span>{delivery.driverId.firstName || 'Not assigned'}</span>
+      </p>
+    )}
+  </div>
+)}
+
               </div>
 
               <div className="delivery-actions">

@@ -4,11 +4,14 @@ import MapComponent from '../../components/banuka/Maps';
 import DeliveryList from '../../components/banuka/DeliveryList';
 import axios from 'axios';
 import './DeliveryTrackingPage.css';
-import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
+//import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
+import { useSocket } from '../../components/banuka/SocketContext';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 const DeliveryTrackingPage = ({ userRole }) => {
+
+  const { status_update,availableDrivers } = useSocket(); // Get the status_update function from the context
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -27,7 +30,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
     console.log("token_______:", token);
     console.log("Current User:", currentUser);
 
-    const {availableDrivers} = useDriversSocket();
+    //const {availableDrivers} = useDriversSocket();
     const mapRef = useRef(); // ✅ Add this near the top of the component
   console.log('availableDrivers11', availableDrivers);
 
@@ -122,6 +125,8 @@ const DeliveryTrackingPage = ({ userRole }) => {
           }
         }
       );
+
+      status_update(response.data);
 
       console.log("Status update response:", response); // Log the response data
 

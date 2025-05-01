@@ -32,6 +32,8 @@ import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
 import Refund from "./pages/Refund";
 import StripePayment from "./pages/Stripepayment";
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
+import { SocketProvider } from '../src/components/banuka/SocketContext.jsx' // Adjust the path as necessary
+
 
 //banuka
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
@@ -41,8 +43,9 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 
 const App = () => {
-  useDriversSocket();
+  
   return (
+    <SocketProvider>
     <BrowserRouter>
 
       <Elements stripe={stripePromise}>
@@ -79,6 +82,7 @@ const App = () => {
       </Elements>
       <ToastContainer/>
     </BrowserRouter>
+    </SocketProvider>
   );
 };
 

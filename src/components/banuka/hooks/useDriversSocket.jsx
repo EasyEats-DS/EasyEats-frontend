@@ -24,9 +24,25 @@ export default function useDriversSocket() {
 
 // ✅ Send location with global socket ref
   const sendLiveLocation = (location,user) => {
+    console.log("sendLiveLocation-:socket", socketRef.current);
     if (socketRef.current) {
       console.log("Sending live location:", location," user :", user);
       socketRef.current.emit('live_location', { location,user });
+    }
+  };
+
+  const status_update = (orderId) => {
+    console.log("status_update-:socket", orderId);
+    if (socketRef.current) {
+      console.log("Sending status update:", orderId );
+      console.log("socketRef.current-:", socketRef.current);
+      try {
+        socketRef.current.emit('status_update', { orderId });
+      }
+      catch (error) {
+        console.error("Error sending status update:", error);
+      }
+      
     }
   };
   
@@ -69,6 +85,8 @@ export default function useDriversSocket() {
       setIsConnected(false);
       console.log('Disconnected from WebSocket server');
     });
+
+    
 
     
 
@@ -272,6 +290,25 @@ export default function useDriversSocket() {
       console.log("Customer location:", cus, coords);
     });
 
+    socket.on('order_status_updated',(orderId) =>{
+      console.log("Order status updated:", orderId.orderId.orderId);
+      const status = orderId.orderId.deliveryStatus;
+      toast.success(
+        <div style={{
+          fontFamily: 'Inter, sans-serif',
+          fontSize: '14px',
+          color: '#2c2c2c',
+          padding: '10px 5px',
+        }}>
+          🎉 Order Status Updated!  
+          <p style={{ margin: '5px 0', fontWeight: 600 }}>
+            Order Status Updated : <span style={{ color: '#00c569' }}>{status}</span> !
+          </p>
+        </div>,
+        { position: "top-right", autoClose: 4000, hideProgressBar: false }
+      );
+    })
+
   
 
     // Request initial data after connection
@@ -293,6 +330,7 @@ export default function useDriversSocket() {
       socket.off('customer_location');
       socket.off('identify');
       socket.off('live_location');
+      socket.off('status_update')
       socketRef.current = null; // Clear the ref
       socket.disconnect();
     };
@@ -304,6 +342,7 @@ export default function useDriversSocket() {
     customerLocation,
     setCustomerLocation,
     sendLiveLocation,
+    status_update,
     error
   };
 }
