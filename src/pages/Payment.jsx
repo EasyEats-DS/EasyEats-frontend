@@ -53,6 +53,7 @@ const Payment = () => {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -62,13 +63,23 @@ const Payment = () => {
                 <tbody className="divide-y divide-gray-200">
                   {payments.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No payment history found</td>
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No payment history found</td>
                     </tr>
                   ) : (
                     payments.map((payment) => (
                       <tr key={payment.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(payment.date).toLocaleDateString()}
+                          {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          }) : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {payment.createdAt ? new Date(payment.createdAt).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">{payment.orderId}</td>
                         <td className="px-6 py-4 whitespace-nowrap">${payment.amount.toFixed(2)}</td>
