@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -47,6 +48,7 @@ const stripeInputStyles = `
 `;
 
 const StripePaymentInterface = () => {
+
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -207,6 +209,7 @@ const StripePaymentInterface = () => {
                     </div>
                   </div>
 
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       CVC
@@ -257,6 +260,7 @@ const StripePaymentInterface = () => {
               </button>
             </form>
           </div>
+
         </div>
       </div>
     </UserLayout>
