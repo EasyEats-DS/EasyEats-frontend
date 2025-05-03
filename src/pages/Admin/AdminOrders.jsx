@@ -9,6 +9,8 @@ import Swal from 'sweetalert2'
 import { getUserFromToken } from '../../lib/auth';
 import {restaurantService} from '../../lib/api/resturants';
 import {userService} from '../../lib/api/users';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -70,10 +72,20 @@ const AdminOrders = () => {
       if (selectedOrder?._id === orderId) {
         setSelectedOrder(prev => ({ ...prev, status: newStatus }));
       }
-      alert("Order status updated successfully!");
+      
+      // Toast notification for success
+      toast.success(`Order status updated to ${newStatus} successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (err) {
       console.error("Failed to update order status:", err);
-      alert("Failed to update order status. Please try again.");
+      
+      // Toast notification for error
+      toast.error(`Failed to update order status: ${err.response?.data?.message || "Please try again."}`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -257,6 +269,7 @@ const AdminOrders = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </AdminLayout>
   );
 };
