@@ -153,7 +153,7 @@ const AdminOrders = () => {
                             })}
                           </span>
                         </div>
-                        <p className="font-bold">LKR {order.totalAmount.toFixed(2)}</p>
+                        <p className="font-bold">$ {order.totalAmount.toFixed(2)}</p>
                       </div>
                     </FoodieCard>
                   ))}

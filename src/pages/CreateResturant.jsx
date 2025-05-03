@@ -3,6 +3,7 @@ import { Building, MapPin, Clock, Phone, Mail, Image, Globe, Plus, Trash } from 
 import { restaurantService } from '../lib/api/resturants';
 import { getUserFromToken } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 const CreateResturant = () => {
@@ -41,6 +42,28 @@ const CreateResturant = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+
+  const geocodeAddress = async () => {
+    const { street, city, state, zipCode, country } = formData.address;
+    const query = `${street}, ${city}, ${state}, ${zipCode}, ${country}`.replace(/\s+/g, '+');
+    
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${query}`
+      );
+      console.log("Geocoding response:", response); // Debug log
+      
+      if (response.data && response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        return [parseFloat(lon), parseFloat(lat)]; // Returns [longitude, latitude]
+      }
+      return null;
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return null;
+    }
+  };
+
   // For development/testing purposes, create a temporary getOwnerId function
   // Remove this and uncomment the real one when authentication is implemented
   const getOwnerId = () => {
@@ -66,6 +89,32 @@ const CreateResturant = () => {
         ...formData,
         [name]: value
       });
+    }
+  };
+
+  const uploadFile = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "EasyEats"); 
+    data.append("cloud_name", "denqj4zdy"); 
+  
+    try {
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/denqj4zdy/image/upload`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      const { secure_url } = response.data;
+      console.log("Image uploaded successfully:", secure_url);
+      return secure_url;
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary:", error.response?.data || error);
+      throw new Error("Failed to upload image");
     }
   };
 
@@ -130,6 +179,18 @@ const handleSubmit = async (e) => {
       throw new Error('User not authenticated');
     }
 
+    // Geocode the address
+    let coordinates = await geocodeAddress();
+    console.log("Geocoded coordinates:", coordinates); // Debug log
+    const formatedCordinates=[];
+    formatedCordinates[0] = coordinates[1];
+    formatedCordinates[1] = coordinates[0];
+    
+    console.log("Formatted coordinates:", formatedCordinates); // Debug log
+    if (!coordinates) {
+      throw new Error('Could not determine location from address');
+    }
+    
     console.log("Current formData.menu before formatting:", formData.menu); // Debug log
 
     // Format menu items
@@ -145,9 +206,11 @@ const handleSubmit = async (e) => {
 
     const payload = {
       ...formData,
-      menu: formattedMenu,
+      position: {
+        coordinates: coordinates
+      },
       ownerId
-    };
+    }
 
     console.log("Final payload being sent:", payload); // Debug log
 
@@ -186,7 +249,17 @@ const handleSubmit = async (e) => {
 };
   
   return (
-      <div className="max-w-6xl mx-auto">
+    <div className='my-12'>
+      <div className="text-center">
+      <h1 className='text-3xl font-bold text-foodie-charcoal relative inline-block'>
+        Create Your Restaurant
+        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-orange-400 rounded-full"></span>
+      </h1>
+      <p className="mt-4 text-gray-600 max-w-xl mx-auto">
+        Start your culinary journey by setting up your restaurant profile. Your details help customers find and enjoy your food.
+      </p>
+    </div>
+      <div className="max-w-6xl mx-auto ">
         {success && (
           <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-md">
             Restaurant created successfully!
@@ -394,24 +467,61 @@ const handleSubmit = async (e) => {
               </div>
             </div>
 
-            {/* Cover Image */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-foodie-charcoal">Restaurant Image</h2>
-              <div>
-                <label className="block text-sm font-medium mb-2">Cover Image URL</label>
-                <div className="relative">
-                  <Image className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="text"
-                    name="ResturantCoverImageUrl"
-                    value={formData.ResturantCoverImageUrl}
-                    onChange={handleChange}
-                    placeholder="Enter image URL"
-                    className="w-full pl-10 h-10 rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
+{/* Cover Image */}
+<div>
+  <h2 className="text-xl font-semibold mb-4 text-foodie-charcoal">Restaurant Image</h2>
+  <div>
+    <label className="block text-sm font-medium mb-2">Cover Image URL</label>
+    <div className="relative w-full max-w-md">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            try {
+              const secure_url = await uploadFile(file);
+              setFormData((prev) => ({
+                ...prev,
+                ResturantCoverImageUrl: secure_url
+              }));
+            } catch (error) {
+              console.error("Image upload failed:", error);
+              setError("Failed to upload image");
+            }
+          }
+        }}
+        className="hidden"
+        id="file-upload"
+      />
+      <label
+        htmlFor="file-upload"
+        className="flex flex-col items-center justify-center w-full h-28 bg-foodie-gray-light rounded-xl border-2 border-dashed border-foodie-orange/50 hover:border-foodie-orange cursor-pointer transition-all duration-300"
+      >
+        <svg
+          className="w-12 h-12 text-foodie-orange/70 mb-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M3 15a4 4 0 004 4h10a4 4 0 004-4M21 15V9a6 6 0 00-6-6H9a6 6 0 00-6 6v6m6-6l3-3m0 0l3 3m-3-3v12"
+          ></path>
+        </svg>
+        <span className="text-foodie-charcoal/80 font-medium">
+          Click to upload an image
+        </span>
+        <span className="text-sm text-foodie-charcoal/50">
+          (PNG, JPG, or GIF)
+        </span>
+      </label>
+    </div>
+  </div>
+</div>
 
             {/* Menu Items */}
             {/* <div className="md:col-span-2">
@@ -527,6 +637,7 @@ const handleSubmit = async (e) => {
             </button>
           </div>
         </form>
+      </div>
       </div>
 
   );

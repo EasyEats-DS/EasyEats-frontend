@@ -14,7 +14,7 @@ const UserLayout = ({ children, title }) => {
         <div className="container max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Menu className="w-6 h-6 lg:hidden text-foodie-charcoal" />
-            <h1 className="text-xl font-bold text-gradient">
+            <h1 className="text-xl font-bold text-gradient" onClick={() => navigate("/")}>
               {title || "EasyEats"}
             </h1>
           </div>
@@ -32,7 +32,7 @@ const UserLayout = ({ children, title }) => {
               Restaurants
             </button>
             <button
-              onClick={() => navigate("/orders")}
+              onClick={() => navigate("/viewOrder")}
               className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
             >
               Orders

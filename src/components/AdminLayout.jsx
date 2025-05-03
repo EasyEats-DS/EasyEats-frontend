@@ -1,13 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Home, Settings, ShoppingCart, Menu as MenuIcon, 
   User, X, CreditCard, Package, LogOut
 } from 'lucide-react';
+import { getUserFromToken } from '../lib/auth';
+import {restaurantService} from '../lib/api/resturants';
 
 const AdminLayout = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [restaurantName, setRestaurantName] = useState('');
   const navigate = useNavigate();
+
+
+    useEffect(() => {
+      const fetchMenuData = async () => {
+        try {
+          const user = getUserFromToken();
+          if (!user || !user.id) {
+            throw new Error('No valid user token found');
+          }
+          const ownerId = user.id;
+          const restaurants = await restaurantService.getRestaurantsByOwnerId(ownerId);
+          console.log('restaurants:', restaurants);
+          setRestaurantName(restaurants[0]?.name || '');
+          console.log('restaurantName:', restaurantName);
+          
+        }
+        catch (error) {
+          console.error('Error fetching restaurant data:', error);
+        }
+      };
+      fetchMenuData();
+    }, []);
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
@@ -15,10 +40,20 @@ const AdminLayout = ({ children, title }) => {
     { icon: Package, label: 'Orders', path: '/admin/orders' },
     { icon: CreditCard, label: 'Earnings', path: '/admin/earnings' },
     { icon: Settings, label: 'Restaurant Settings', path: '/admin/settings' },
-    {icon: ShoppingCart, label: 'Inventory', path: '/admin/inventory' },
+    // {icon: ShoppingCart, label: 'Inventory', path: '/admin/inventory' },
     { icon: User, label: 'Profile', path: '/admin/profile' },
     // { icon: X, label: 'Restaurant Creation', path: '/admin/restaurant-creation' },
   ];
+
+  const handleLogout = () => {
+    // Remove auth data
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    sessionStorage.clear();
+
+    // Redirect to login page
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen bg-foodie-gray-light">
@@ -42,7 +77,7 @@ const AdminLayout = ({ children, title }) => {
         </nav>
         
         <div className="p-4 border-t border-foodie-gray">
-          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors">
+          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors" onClick={handleLogout}>
             <LogOut className="w-5 h-5 mr-3" />
             <span>Logout</span>
           </button>
@@ -111,8 +146,8 @@ const AdminLayout = ({ children, title }) => {
                 <User className="w-6 h-6 text-foodie-charcoal" />
               </button>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">Restaurant Name</p>
-                <p className="text-xs text-foodie-gray-dark">Admin</p>
+              <p className="text-sm font-medium">{restaurantName || 'Loading...'}</p>
+              <p className="text-xs text-foodie-gray-dark">Admin</p>
               </div>
             </div>
           </div>

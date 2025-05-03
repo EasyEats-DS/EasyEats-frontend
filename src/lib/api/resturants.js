@@ -84,5 +84,29 @@ export const restaurantService = {
       console.error('Error deleting menu item:', error);
       throw error;
     }
-  }
+  },
+  updateMenuItem: async (restaurantId, menuItemId, updatedData) => {
+    try {
+      const response = await api.put(
+        `/restaurants/${restaurantId}/menu/${menuItemId}`,
+        updatedData
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      throw error;
+    }
+  },
+  updateRestaurant: async (restaurantId, updateData) => {
+    try {
+      const response = await api.put(
+        `/restaurants/${restaurantId}`,
+        updateData
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating restaurant:', error);
+      throw error;
+    }
+  },
 };

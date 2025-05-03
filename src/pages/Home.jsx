@@ -1,7 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
+//import useDriversSocket from "../components/banuka/hooks/useDriversSocket";
+
+
+
 
 const Home = () => {
+  //const usersSocket = useDriversSocket();
+  const userType = localStorage.getItem('userType');
+  const user = userType === 'driver' 
+    ? JSON.parse(localStorage.getItem('driver'))
+    : JSON.parse(localStorage.getItem('Customer'));
+
   const cards = [
     {
       title: "Browse Restaurants",
@@ -35,6 +45,19 @@ const Home = () => {
       svgPath:
         "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
       buttonText: "Track Order",
+    },
+    {
+      title: "Deliveries",
+      description: "Track your food delivery",
+      link: userType ? (userType === 'driver' ? "/driver/map" : "/customer/map") : "/login",
+      colorClass: "border-blue-500",
+      buttonClass: "bg-blue-500 hover:bg-blue-600",
+      iconColorClass: "text-blue-500",
+      svgPath:
+        "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
+      buttonText: userType === 'driver' ? "View Deliveries" : "Track Orders"
+      
+    
     },
     {
       title: "Login",
@@ -135,7 +158,7 @@ const Home = () => {
           {cards.map((card, idx) => (
             <Link
               key={idx}
-              to={card.link}
+              to={card.link }
               className="transform hover:scale-105 transition duration-300"
             >
               <div

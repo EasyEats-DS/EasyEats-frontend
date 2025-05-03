@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UserLayout from '../components/UserLayout';
@@ -6,6 +7,7 @@ import Footer from '../components/Footer';
 
 const Payment = () => {
   const navigate = useNavigate();
+
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,6 +18,7 @@ const Payment = () => {
 
   const fetchPaymentHistory = async () => {
     try {
+
       console.log('Fetching payment history...');
       const response = await axios.get('http://localhost:5003/payments/user/USER123/history');
       
@@ -25,9 +28,11 @@ const Payment = () => {
     } catch (err) {
       console.error('Payment fetch error:', err);
       setError(err.response?.data?.message || 'Failed to fetch payment history');
+
       setLoading(false);
     }
   };
+
 
   return (
     <UserLayout title="Payment History">
@@ -112,6 +117,7 @@ const Payment = () => {
       </div>
       <Footer />
     </UserLayout>
+
   );
 };
 

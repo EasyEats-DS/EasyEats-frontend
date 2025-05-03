@@ -22,14 +22,14 @@ import Footer from "../components/Footer"
 import { restaurantService } from "../lib/api/resturants"
 
 const categories = [
-  { id: 1, name: "Pizza", image: "https://source.unsplash.com/random/200x200/?pizza" },
-  { id: 2, name: "Burger", image: "https://source.unsplash.com/random/200x200/?burger" },
-  { id: 3, name: "Sushi", image: "https://source.unsplash.com/random/200x200/?sushi" },
-  { id: 4, name: "Pasta", image: "https://source.unsplash.com/random/200x200/?pasta" },
-  { id: 5, name: "Salad", image: "https://source.unsplash.com/random/200x200/?salad" },
-  { id: 6, name: "Dessert", image: "https://source.unsplash.com/random/200x200/?dessert" },
-  { id: 7, name: "Indian", image: "https://source.unsplash.com/random/200x200/?indian-food" },
-  { id: 8, name: "Mexican", image: "https://source.unsplash.com/random/200x200/?mexican-food" },
+  { id: 1, name: "Pizza", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/pizza_n1hfc3.jpg" },
+  { id: 2, name: "Burger", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/burger_jdrl2z.jpg" },
+  { id: 3, name: "Sushi", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936070/sushi_iz5icu.jpg" },
+  { id: 4, name: "Pasta", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/pasta_xsulik.jpg" },
+  { id: 5, name: "Salad", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936072/salad_ysicvd.jpg" },
+  { id: 6, name: "Dessert", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/summer-desserts_s7ll0l.jpg" },
+  { id: 7, name: "Indian", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/indian_vzsgb8.jpg" },
+  { id: 8, name: "Mexican", image: "https://res.cloudinary.com/denqj4zdy/image/upload/v1745936071/mexican-cuisine-more-than-640x427_wcquia.jpg" },
 ]
 
 const promos = [
@@ -184,7 +184,7 @@ const Restaurant = () => {
             <div className="md:w-1/2 flex justify-center">
               <div className="relative">
                 <img
-                  src="https://source.unsplash.com/random/600x600/?gourmet-burger"
+                  src="https://res.cloudinary.com/denqj4zdy/image/upload/v1745936705/3a029dc4cc871caef3e5ddda310b699e_chmho9.jpg"
                   alt="Delicious food"
                   className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-full border-8 border-white shadow-2xl"
                 />
@@ -466,7 +466,7 @@ const Restaurant = () => {
         <div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9E00] rounded-3xl overflow-hidden shadow-xl">
           <div className="p-8 md:p-12 flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">Get the Foodie App</h2>
+              <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">Get the EasyEats App</h2>
               <p className="text-white text-lg mb-6">
                 Download our mobile app for a better experience, faster ordering, and exclusive mobile-only deals!
               </p>
@@ -493,9 +493,9 @@ const Restaurant = () => {
             </div>
             <div className="md:w-1/2 flex justify-center">
               <img
-                src="https://source.unsplash.com/random/600x800/?food-app"
+                src="https://res.cloudinary.com/denqj4zdy/image/upload/v1745936824/original-378754e0ebbae9c4f837971106630f72_ovi9jn.webp"
                 alt="Mobile App"
-                className="w-64 h-auto rounded-3xl shadow-2xl border-4 border-white transform -rotate-6"
+                className="w-96 h-auto rounded-3xl shadow-2xl border-4 border-white transform -rotate-6"
               />
             </div>
           </div>
