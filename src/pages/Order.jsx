@@ -56,22 +56,23 @@ const Order = () => {
         // Create order first
         await createOrder(orderPayload);
         
-        // Send notification 
+        // Send notification through available channels
         try {
           await sendOrderConfirmation({
-            orderId,
+            orderId: `Order #${orderId.slice(0, 8)}`,
             userId,
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: total,
-            preferredChannel: "BOTH",
             metadata: {
               email: "dushanbolonghe@gmail.com",
-              subject: "Order Confirmation - EasyEats"
+              subject: "Order Confirmation - EasyEats",
+              phone: "+94701615834"
             }
           });
         } catch (notifError) {
           console.error("Failed to send notification:", notifError);
+          // Continue with order process even if notification fails
         }
 
         toast.success("Order placed successfully!", {

@@ -139,17 +139,18 @@ const StripePaymentInterface = () => {
         try {
           // Send notification after successful payment
           await sendOrderConfirmation({
-            orderId,
+            orderId: `Order #${orderId.slice(0, 8)}`,
             userId,
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: amount,
-            preferredChannel: "EMAIL",
+            preferredChannel: "BOTH", // Using both channels
             metadata: {
               email: "dushanbolonghe@gmail.com",
               subject: "Order Confirmation - EasyEats",
               paymentId: paymentIntent.id,
-              paymentStatus: paymentIntent.status
+              paymentStatus: paymentIntent.status,
+              phone: "+94701615834" // Adding phone to metadata
             }
           });
         } catch (notifError) {
