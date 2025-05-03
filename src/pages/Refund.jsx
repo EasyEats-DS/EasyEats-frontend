@@ -72,7 +72,7 @@ const Refund = () => {
             </div>
             <h2 className="text-2xl font-bold text-green-800 mb-2">Refund Request Submitted</h2>
             <p className="text-green-600 mb-6">Your refund request has been successfully submitted and is being processed.</p>
-            <FoodieButton onClick={() => navigate('/orders')}>View Orders</FoodieButton>
+            <FoodieButton onClick={() => navigate('/payment')}>Back To Payments</FoodieButton>
           </div>
         ) : (
           <>
