@@ -81,6 +81,28 @@ const StripePayment = () => {
       }
 
       if (paymentIntent.status === 'succeeded') {
+        // Send notification for successful payment
+        try {
+          await paymentService.sendOrderConfirmation({
+            orderId: `#${orderId.slice(0, 8)}`,
+            userId,
+            customerEmail: "dushanbolonghe@gmail.com",
+            customerPhone: "+94701615834",
+            totalAmount: amount,
+            channel: 'BOTH',
+            metadata: {
+              email: "dushanbolonghe@gmail.com",
+              subject: "Order Confirmation - EasyEats",
+              phone: "+94701615834",
+              channel: "BOTH",
+              paymentId: paymentIntent.id,
+              paymentStatus: paymentIntent.status
+            }
+          });
+        } catch (notifError) {
+          console.error("Failed to send notification:", notifError);
+        }
+
         navigate('/orderConfirmed', { 
           state: { 
             orderId,

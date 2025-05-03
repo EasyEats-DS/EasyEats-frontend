@@ -56,18 +56,20 @@ const Order = () => {
         // Create order first
         await createOrder(orderPayload);
         
-        // Send notification through available channels
+        // Send notification through both channels
         try {
           await sendOrderConfirmation({
-            orderId: `Order #${orderId.slice(0, 8)}`,
+            orderId: `#${orderId.slice(0, 8)}`,
             userId,
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: total,
+            channel: 'BOTH',
             metadata: {
               email: "dushanbolonghe@gmail.com",
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834"
+              phone: "+94701615834",
+              channel: "BOTH"
             }
           });
         } catch (notifError) {
