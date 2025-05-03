@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -6,17 +5,15 @@ import UserLayout from '../components/UserLayout';
 import { paymentService } from '../lib/api/payments';
 import { getUserFromToken } from '../lib/auth';
 import { sendOrderConfirmation } from "../lib/api/notifications";
+import { createOrder } from "../lib/api/orders";
 
 const CARD_ELEMENT_OPTIONS = {
-  classes: {
-    base: 'stripe-input',
-    focus: 'stripe-input--focus',
-    invalid: 'stripe-input--invalid',
-  },
   style: {
     base: {
       fontSize: '16px',
       color: '#32325d',
+      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontSmoothing: 'antialiased',
       '::placeholder': {
         color: '#aab7c4',
       },
@@ -101,18 +98,8 @@ const StripePaymentInterface = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    if (!stripe || !elements) {
-      setError('Payment system is not initialized. Please try again.');
-      return;
-    }
-
-    if (!amount || !orderId || !userId) {
+    if (!stripe || !elements || !amount || !orderId || !userId) {
       setError('Required payment information is missing. Please try again.');
-      return;
-    }
-
-    if (!cardComplete.cardNumber || !cardComplete.cardExpiry || !cardComplete.cardCvc) {
-      setError('Please fill in all card details.');
       return;
     }
 
@@ -120,13 +107,16 @@ const StripePaymentInterface = () => {
     setError(null);
 
     try {
+      // First create the order
+      await createOrder(orderPayload);
+
+      // Then handle the payment
       const { clientSecret } = await paymentService.createPaymentIntent({
         amount: Math.round(amount * 100),
         orderId,
         userId,
         currency: 'LKR',
-        paymentMethod: 'CARD',
-        orderPayload
+        paymentMethod: 'CARD'
       });
 
       const cardNumber = elements.getElement(CardNumberElement);
@@ -146,8 +136,8 @@ const StripePaymentInterface = () => {
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Send notification for successful order
         try {
+          // Send notification after successful payment
           await sendOrderConfirmation({
             orderId,
             userId,
@@ -157,16 +147,18 @@ const StripePaymentInterface = () => {
             preferredChannel: "EMAIL",
             metadata: {
               email: "dushanbolonghe@gmail.com",
-              subject: "Order Confirmation - EasyEats"
+              subject: "Order Confirmation - EasyEats",
+              paymentId: paymentIntent.id,
+              paymentStatus: paymentIntent.status
             }
           });
         } catch (notifError) {
           console.error("Failed to send notification:", notifError);
-          // Don't block the order confirmation even if notification fails
         }
 
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
+        
         navigate('/orderConfirmed', { 
           state: { 
             orderId: orderId,
@@ -177,9 +169,9 @@ const StripePaymentInterface = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred while processing your payment.');
       console.error('Payment error:', err);
+    } finally {
+      setProcessing(false);
     }
-
-    setProcessing(false);
   };
 
   return (
@@ -201,7 +193,7 @@ const StripePaymentInterface = () => {
                     <CardNumberElement
                       options={CARD_ELEMENT_OPTIONS}
                       onChange={(e) => handleCardChange(e, 'cardNumber')}
-                      className="h-full"
+                      className="py-3 px-4"
                     />
                   </div>
                 </div>
@@ -215,7 +207,7 @@ const StripePaymentInterface = () => {
                       <CardExpiryElement
                         options={CARD_ELEMENT_OPTIONS}
                         onChange={(e) => handleCardChange(e, 'cardExpiry')}
-                        className="h-full"
+                        className="py-3 px-4"
                       />
                     </div>
                   </div>
@@ -229,7 +221,7 @@ const StripePaymentInterface = () => {
                       <CardCvcElement
                         options={CARD_ELEMENT_OPTIONS}
                         onChange={(e) => handleCardChange(e, 'cardCvc')}
-                        className="h-full"
+                        className="py-3 px-4"
                       />
                     </div>
                   </div>

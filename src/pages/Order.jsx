@@ -51,9 +51,10 @@ const Order = () => {
       };
 
       if (paymentMethod === "cash") {
+        // Create order first
         await createOrder(orderPayload);
         
-        // Send notification with hardcoded values
+        // Send notification 
         try {
           await sendOrderConfirmation({
             orderId,
@@ -61,25 +62,32 @@ const Order = () => {
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: total,
-            preferredChannel: "EMAIL"
+            preferredChannel: "BOTH",
+            metadata: {
+              email: "dushanbolonghe@gmail.com",
+              subject: "Order Confirmation - EasyEats"
+            }
           });
         } catch (notifError) {
           console.error("Failed to send notification:", notifError);
-          // Don't block the order confirmation even if notification fails
         }
 
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
-        navigate("/orderConfirmed");
+        navigate("/orderConfirmed", { 
+          state: { 
+            orderId: orderId 
+          }
+        });
       } else {
-        // For card payment, navigate to StripePaymentInterface with orderId
+        // For card payment, pass complete order payload
         navigate("/stripe-payment-interface", {
           state: {
             amount: total || 0,
             orderId,
             orderPayload,
-            userEmail: user.email,
-            userPhone: user.phone
+            userEmail: "dushanbolonghe@gmail.com",
+            userPhone: "+94701615834"
           },
           replace: true
         });

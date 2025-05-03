@@ -54,20 +54,27 @@ if (!STRIPE_PUBLISHABLE_KEY) {
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const stripeOptions = {
-  locale: 'en',
   fonts: [{
-    cssSrc: 'https://fonts.googleapis.com/css?family=Roboto:400,500,600',
+    cssSrc: 'https://fonts.googleapis.com/css?family=Roboto',
   }],
+  locale: 'en',
   appearance: {
-    theme: 'stripe',
+    theme: 'flat',
     variables: {
-      colorPrimary: '#FF7A00',
-      colorBackground: '#ffffff',
-      colorText: '#32325d',
-      colorDanger: '#fa755a',
       fontFamily: 'Roboto, sans-serif',
-      spacingUnit: '4px',
       borderRadius: '4px',
+    },
+    rules: {
+      '.Input': {
+        border: '1px solid #E4E4E4',
+        boxShadow: 'none',
+        fontSize: '16px',
+        padding: '12px',
+      },
+      '.Input:focus': {
+        border: '1px solid #FF7A00',
+        boxShadow: '0 1px 3px 0 #FF7A00',
+      },
     },
   },
 };
