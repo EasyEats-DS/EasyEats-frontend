@@ -11,3 +11,13 @@ export const sendOrderConfirmation = async (payload) => {
     throw error;
   }
 };
+
+export const sendDeliveryUpdate = async (payload) => {
+  try {
+    const response = await axios.post(`${API_URL}/delivery-update`, payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error sending delivery update:', error);
+    throw error;
+  }
+};

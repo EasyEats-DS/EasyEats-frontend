@@ -1,87 +1,94 @@
-import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Users, ShoppingBag, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import AdminLayout from '../../components/AdminLayout';
-import FoodieCard from '../../components/FoodieCard';
+import React, { useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, Users, ShoppingBag, ArrowUpRight, ArrowDownRight, Bell } from "lucide-react";
+import AdminLayout from "../../components/AdminLayout";
+import FoodieCard from "../../components/FoodieCard";
+import { toast } from "react-toastify";
+import axios from "axios";
 
-
-
-// Sample data for charts (already present, uncommented for use)
 const orderData = [
-  { name: 'Mon', orders: 4 },
-  { name: 'Tue', orders: 6 },
-  { name: 'Wed', orders: 8 },
-  { name: 'Thu', orders: 7 },
-  { name: 'Fri', orders: 12 },
-  { name: 'Sat', orders: 15 },
-  { name: 'Sun', orders: 10 },
+  { name: "Mon", orders: 4 },
+  { name: "Tue", orders: 6 },
+  { name: "Wed", orders: 8 },
+  { name: "Thu", orders: 7 },
+  { name: "Fri", orders: 12 },
+  { name: "Sat", orders: 15 },
+  { name: "Sun", orders: 10 },
 ];
 
 const revenueData = [
-  { name: 'Mon', revenue: 120 },
-  { name: 'Tue', revenue: 180 },
-  { name: 'Wed', revenue: 240 },
-  { name: 'Thu', revenue: 210 },
-  { name: 'Fri', revenue: 360 },
-  { name: 'Sat', revenue: 450 },
-  { name: 'Sun', revenue: 300 },
-];
-// const orderData = [
-//   { name: 'Mon', orders: 4 },
-//   { name: 'Tue', orders: 6 },
-//   { name: 'Wed', orders: 8 },
-//   { name: 'Thu', orders: 7 },
-//   { name: 'Fri', orders: 12 },
-//   { name: 'Sat', orders: 15 },
-//   { name: 'Sun', orders: 10 },
-// ];
-
-// const revenueData = [
-//   { name: 'Mon', revenue: 120 },
-//   { name: 'Tue', revenue: 180 },
-//   { name: 'Wed', revenue: 240 },
-//   { name: 'Thu', revenue: 210 },
-//   { name: 'Fri', revenue: 360 },
-//   { name: 'Sat', revenue: 450 },
-//   { name: 'Sun', revenue: 300 },
-// ];
-
-const recentOrders = [
-  { 
-    id: '#ORD-5312', 
-    customer: 'John Doe', 
-    items: ['Classic Cheeseburger', 'French Fries', 'Soft Drink'],
-    status: 'Completed', 
-    total: 18.47,
-    date: '25 Apr, 2:30 PM' 
-  },
-  { 
-    id: '#ORD-5311', 
-    customer: 'Alice Smith', 
-    items: ['Veggie Burger', 'Onion Rings', 'Milkshake'],
-    status: 'Preparing', 
-    total: 22.95,
-    date: '25 Apr, 2:15 PM' 
-  },
-  { 
-    id: '#ORD-5310', 
-    customer: 'Robert Brown', 
-    items: ['Bacon Deluxe', 'French Fries'],
-    status: 'Delivering', 
-    total: 14.98,
-    date: '25 Apr, 1:45 PM' 
-  },
-  { 
-    id: '#ORD-5309', 
-    customer: 'Emily Johnson', 
-    items: ['Mushroom Swiss', 'Soft Drink'],
-    status: 'Completed', 
-    total: 14.48,
-    date: '25 Apr, 1:20 PM' 
-  },
+  { name: "Mon", revenue: 120 },
+  { name: "Tue", revenue: 180 },
+  { name: "Wed", revenue: 240 },
+  { name: "Thu", revenue: 210 },
+  { name: "Fri", revenue: 360 },
+  { name: "Sat", revenue: 450 },
+  { name: "Sun", revenue: 300 },
 ];
 
 const AdminDashboard = () => {
+  const [recentOrders, setRecentOrders] = useState([
+    {
+      id: "#ORD-5312",
+      customer: "John Doe",
+      items: ["Classic Cheeseburger", "French Fries", "Soft Drink"],
+      status: "Preparing",
+      total: 18.47,
+      date: "25 Apr, 2:30 PM",
+    },
+    {
+      id: "#ORD-5311",
+      customer: "Alice Smith",
+      items: ["Veggie Burger", "Onion Rings", "Milkshake"],
+      status: "Preparing",
+      total: 22.95,
+      date: "25 Apr, 2:15 PM",
+    },
+    {
+      id: "#ORD-5310",
+      customer: "Robert Brown",
+      items: ["Bacon Deluxe", "French Fries"],
+      status: "Delivering",
+      total: 14.98,
+      date: "25 Apr, 1:45 PM",
+    },
+    {
+      id: "#ORD-5309",
+      customer: "Emily Johnson",
+      items: ["Mushroom Swiss", "Soft Drink"],
+      status: "Completed",
+      total: 14.48,
+      date: "25 Apr, 1:20 PM",
+    },
+  ]);
+
+  const handleNotifyCustomer = async (order) => {
+    try {
+      await axios.post("http://localhost:5003/notifications/delivery-update", {
+        orderId: order.id,
+        userId: "USER123",
+        customerEmail: "dushanbolonghe@gmail.com",
+        customerPhone: "+940701615834",
+        status: "OUT_FOR_DELIVERY",
+        estimatedArrival: "15 minutes",
+      });
+
+      setRecentOrders((prevOrders) =>
+        prevOrders.map((o) => {
+          if (o.id === order.id) {
+            return { ...o, status: "Delivering" };
+          }
+          return o;
+        })
+      );
+
+      toast.success("Customer notification sent successfully!");
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+      toast.error("Failed to send notification");
+    }
+  };
+
   return (
     <AdminLayout title="Dashboard">
       <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
@@ -101,7 +108,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </FoodieCard>
-          
+
           <FoodieCard className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between">
               <div>
@@ -117,7 +124,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </FoodieCard>
-          
+
           <FoodieCard className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between">
               <div>
@@ -133,7 +140,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </FoodieCard>
-          
+
           <FoodieCard className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between">
               <div>
@@ -150,7 +157,7 @@ const AdminDashboard = () => {
             </div>
           </FoodieCard>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FoodieCard interactive={false} className="p-6">
             <h3 className="text-lg font-bold mb-4">Orders Overview</h3>
@@ -162,31 +169,34 @@ const AdminDashboard = () => {
                 >
                   <defs>
                     <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#FF7A00" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#FF7A00" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#FF7A00" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#FF7A00" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
-                    formatter={(value) => [`${value} orders`, 'Orders']}
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                    formatter={(value) => [`${value} orders`, "Orders"]}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="orders" 
-                    stroke="#FF7A00" 
-                    fillOpacity={1} 
-                    fill="url(#colorOrders)" 
+                  <Area
+                    type="monotone"
+                    dataKey="orders"
+                    stroke="#FF7A00"
+                    fillOpacity={1}
+                    fill="url(#colorOrders)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </FoodieCard>
-          
+
           <FoodieCard interactive={false} className="p-6">
-            <h3 className="text-lg font-bold mb-4">Revenue Overview</h3>
             <h3 className="text-lg font-bold mb-4">Revenue Overview</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -196,30 +206,34 @@ const AdminDashboard = () => {
                 >
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4CD964" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#4CD964" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#4CD964" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#4CD964" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
-                    formatter={(value) => [`$${value}`, 'Revenue']}
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                    formatter={(value) => [`$${value}`, "Revenue"]}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#4CD964" 
-                    fillOpacity={1} 
-                    fill="url(#colorRevenue)" 
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#4CD964"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </FoodieCard>
         </div>
-        
+
         <FoodieCard interactive={false} className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold">Recent Orders</h3>
@@ -241,24 +255,46 @@ const AdminDashboard = () => {
               </thead>
               <tbody>
                 {recentOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-foodie-gray hover:bg-foodie-gray-light cursor-pointer">
+                  <tr
+                    key={order.id}
+                    className="border-b border-foodie-gray hover:bg-foodie-gray-light cursor-pointer"
+                  >
                     <td className="py-4 font-medium">{order.id}</td>
                     <td className="py-4">{order.customer}</td>
                     <td className="py-4">
                       <div className="flex flex-col">
                         {order.items.map((item, idx) => (
-                          <span key={idx} className="text-sm text-foodie-gray-dark">{item}</span>
+                          <span key={idx} className="text-sm text-foodie-gray-dark">
+                            {item}
+                          </span>
                         ))}
                       </div>
                     </td>
                     <td className="py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        order.status === 'Preparing' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {order.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            order.status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "Preparing"
+                              ? "bg-blue-100 text-blue-800"
+                              : order.status === "Delivering"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                        {order.status === "Preparing" && (
+                          <button
+                            onClick={() => handleNotifyCustomer(order)}
+                            className="flex items-center px-2 py-1 text-xs bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
+                          >
+                            <Bell className="w-3 h-3 mr-1" />
+                            Notify Customer
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 font-medium">${order.total.toFixed(2)}</td>
                     <td className="py-4 text-foodie-gray-dark">{order.date}</td>
