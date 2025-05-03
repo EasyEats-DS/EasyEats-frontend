@@ -30,7 +30,7 @@ const OrderConfirmed = () => {
       {/* Buttons */}
       <div className="flex flex-col md:flex-row gap-4">
         <Link
-          to="/orders"
+          to="/viewOrder"
           className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-orange-400 transition-all"
         >
           View My Orders
