@@ -1,12 +1,7 @@
 import React from "react";
-
-import { ToastContainer } from "react-toastify";
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-
 import Cart from "./pages/Cart";
 import Home from "./pages/Home";
 import Resturant from "./pages/Restaurant";
@@ -28,9 +23,17 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewOrders from "./pages/viewOrders";
-import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
+// import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
 import Refund from "./pages/Refund";
 import StripePayment from "./pages/Stripepayment";
+import SuperAdminDashboard from "./pages/SuperAdmin/SuperAdminDashboard";
+import SuperAdminRestaurants from "./pages/SuperAdmin/SuperAdminRestaurants";
+import SuperAdminUsers from "./pages/SuperAdmin/SuperAdminUsers";
+import SuperAdminOrders from "./pages/SuperAdmin/SuperAdminOrders";
+import SuperAdminPayments from "./pages/SuperAdmin/SuperAdminPayments";
+import CreateResturant from "./pages/CreateResturant";
+import { ToastContainer } from "react-toastify";
+// import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 import { SocketProvider } from '../src/components/banuka/SocketContext.jsx' // Adjust the path as necessary
@@ -40,7 +43,6 @@ import { SocketProvider } from '../src/components/banuka/SocketContext.jsx' // A
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 
 import StripePaymentInterface from "./pages/StripePaymentInterface";
-
 
 // Initialize Stripe with options
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -70,14 +72,23 @@ const stripeOptions = {
   },
 };
 
-
 const App = () => {
-  
   return (
     <SocketProvider>
     <BrowserRouter>
-
       <Elements stripe={stripePromise} options={stripeOptions}>
+    <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
 
         <Routes>
           {/* Public Routes */}
@@ -89,7 +100,8 @@ const App = () => {
           <Route path="/driver/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
           <Route path="/customer/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
 
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
+          <Route path="/list" element={<ProtectedRoute><Home/></ProtectedRoute>} />
           <Route path="/restaurant" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
           <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
@@ -109,9 +121,20 @@ const App = () => {
           <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
           <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
           <Route path="/stripe-payment-interface" element={<ProtectedRoute><StripePaymentInterface /></ProtectedRoute>} />
+          <Route path="/create-restaurant" element={<ProtectedRoute><CreateResturant /></ProtectedRoute>} />
+
+
+          {/* Super Admin Routes */}
+          <Route path="/superadmin/dashboard" element={<ProtectedRoute><SuperAdminDashboard/></ProtectedRoute>} />
+          <Route path="superadmin/restaurants" element={<ProtectedRoute><SuperAdminRestaurants /></ProtectedRoute>} />
+          <Route path="superadmin/users" element={<ProtectedRoute><SuperAdminUsers /></ProtectedRoute>} />
+          <Route path="superadmin/orders" element={<ProtectedRoute><SuperAdminOrders /></ProtectedRoute>} />
+          <Route path="superadmin/payments" element={<ProtectedRoute><SuperAdminPayments /></ProtectedRoute>} />
+
+          {/* Catch-all route */}
+
         </Routes>
       </Elements>
-      <ToastContainer/>
     </BrowserRouter>
     </SocketProvider>
   );
