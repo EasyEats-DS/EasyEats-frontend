@@ -67,7 +67,7 @@ function ViewOrders() {
 
                 <div className="flex justify-between items-center border-t border-gray-200 pt-4">
                   <p className="text-gray-700 font-medium">Total:</p>
-                  <p className="text-lg font-bold text-orange-500">LKR {order.totalAmount.toFixed(2)}</p>
+                  <p className="text-lg font-bold text-orange-500">USD {order.totalAmount.toFixed(2)}</p>
                 </div>
               </div>
             ))}
