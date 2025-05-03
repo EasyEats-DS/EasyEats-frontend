@@ -66,7 +66,7 @@ const StripePayment = () => {
       });
 
       // Confirm card payment
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+      const result = await stripe.confirmCardPayment(
         clientSecret,
         {
           payment_method: {
@@ -75,12 +75,13 @@ const StripePayment = () => {
         }
       );
 
-      if (stripeError) {
-        setError(stripeError.message);
+      if (result.error) {
+        setError(result.error.message);
         return;
       }
 
-      if (paymentIntent.status === 'succeeded') {
+      // Check if payment is successful
+      if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
         // Send notification for successful payment
         try {
           await paymentService.sendOrderConfirmation({
@@ -95,20 +96,25 @@ const StripePayment = () => {
               subject: "Order Confirmation - EasyEats",
               phone: "+94701615834",
               channel: "BOTH",
-              paymentId: paymentIntent.id,
-              paymentStatus: paymentIntent.status
+              paymentId: result.paymentIntent.id,
+              paymentStatus: "SUCCESS"
             }
           });
         } catch (notifError) {
           console.error("Failed to send notification:", notifError);
         }
 
+        // Navigate to confirmation page
         navigate('/orderConfirmed', { 
           state: { 
             orderId,
-            paymentId: paymentIntent.id
+            paymentId: result.paymentIntent.id,
+            paymentStatus: "SUCCESS"
           }
         });
+      } else {
+        setError('Payment failed. Please try again.');
+        return;
       }
     } catch (err) {
       setError(err.response?.data?.message || 'An unexpected error occurred. Please try again.');

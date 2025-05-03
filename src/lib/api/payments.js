@@ -19,4 +19,13 @@ export const paymentService = {
       throw error;
     }
   },
+  getPaymentHistory: async (userId) => {
+    try {
+      const response = await api.get(`/payments/user/${userId}/history`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching payment history:', error);
+      throw error;
+    }
+  }
 };

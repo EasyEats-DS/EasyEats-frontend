@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import UserLayout from '../components/UserLayout';
 import Footer from '../components/Footer';
+import { getUserFromToken } from '../lib/auth';
+import { paymentService } from '../lib/api/payments';
 
 const Payment = () => {
   const navigate = useNavigate();
-
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,24 +17,23 @@ const Payment = () => {
 
   const fetchPaymentHistory = async () => {
     try {
+      const user = getUserFromToken();
+      if (!user || !user.id) {
+        throw new Error('User not authenticated');
+      }
 
-      console.log('Fetching payment history...');
-      const response = await axios.get('http://localhost:5003/payments/user/USER123/history');
-      
-      console.log('Payment data received:', response.data);
-      setPayments(response.data);
+      const paymentData = await paymentService.getPaymentHistory(user.id);
+      setPayments(paymentData);
       setLoading(false);
     } catch (err) {
       console.error('Payment fetch error:', err);
       setError(err.response?.data?.message || 'Failed to fetch payment history');
-
       setLoading(false);
     }
   };
 
-
   return (
-    <UserLayout title="Payment History">
+    <UserLayout title="EasyEats">
       <div className="p-6">
         {loading && (
           <div className="flex justify-center items-center h-screen">Loading...</div>
@@ -117,7 +115,6 @@ const Payment = () => {
       </div>
       <Footer />
     </UserLayout>
-
   );
 };
 

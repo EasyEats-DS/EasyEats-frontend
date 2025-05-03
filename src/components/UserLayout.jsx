@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Search, ShoppingCart, User, Menu } from "lucide-react";
+import { Home, Search, ShoppingCart, User, Menu, CreditCard } from "lucide-react";
 import Cart from "../pages/Cart";
 
 const UserLayout = ({ children, title }) => {
@@ -36,6 +36,12 @@ const UserLayout = ({ children, title }) => {
               className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
             >
               Orders
+            </button>
+            <button
+              onClick={() => navigate("/payment")}
+              className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
+            >
+              Payments
             </button>
           </div>
           <div className="flex items-center gap-1 md:gap-3">
@@ -112,6 +118,13 @@ const UserLayout = ({ children, title }) => {
               3
             </span>
             <span className="text-xs mt-1">Cart</span>
+          </button>
+          <button
+            onClick={() => navigate("/payment")}
+            className="flex flex-col items-center text-foodie-gray-dark hover:text-foodie-orange transition-colors"
+          >
+            <CreditCard className="w-6 h-6" />
+            <span className="text-xs mt-1">Payments</span>
           </button>
           <button
             onClick={() => navigate("/profile")}

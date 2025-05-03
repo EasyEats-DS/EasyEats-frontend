@@ -31,8 +31,9 @@ const Order = () => {
       const user = getUserFromToken();
       const userId = user?.id || 'test-user';
       
-      // Generate a unique orderId
-      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+      const orderNumber = Math.floor(100 + Math.random() * 900);
+      const orderId = `ORD-${orderNumber}`;
       
       // Create order payload with orderId
       const orderPayload = {
@@ -59,17 +60,15 @@ const Order = () => {
         // Send notification through both channels
         try {
           await sendOrderConfirmation({
-            orderId: `#${orderId.slice(0, 8)}`,
+            orderId: orderId, // Use the ORD-123 format directly
             userId,
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: total,
-            channel: 'BOTH',
             metadata: {
               email: "dushanbolonghe@gmail.com",
               subject: "Order Confirmation - EasyEats",
               phone: "+94701615834",
-              channel: "BOTH"
             }
           });
         } catch (notifError) {

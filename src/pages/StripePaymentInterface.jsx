@@ -121,7 +121,7 @@ const StripePaymentInterface = () => {
 
       const cardNumber = elements.getElement(CardNumberElement);
       
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+      const result = await stripe.confirmCardPayment(
         clientSecret,
         {
           payment_method: {
@@ -130,28 +130,26 @@ const StripePaymentInterface = () => {
         }
       );
 
-      if (stripeError) {
-        setError(stripeError.message);
+      if (result.error) {
+        setError(result.error.message);
         return;
       }
 
-      if (paymentIntent.status === 'succeeded') {
+      if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
         try {
           // Send notification after successful payment
           await sendOrderConfirmation({
-            orderId: `#${orderId.slice(0, 8)}`,
+            orderId: orderId.substring(0, 7),
             userId,
             customerEmail: "dushanbolonghe@gmail.com",
             customerPhone: "+94701615834",
             totalAmount: amount,
-            channel: 'BOTH',
             metadata: {
               email: "dushanbolonghe@gmail.com",
               subject: "Order Confirmation - EasyEats",
               phone: "+94701615834",
-              channel: "BOTH", // Set channel to BOTH for email and SMS notifications
-              paymentId: paymentIntent.id,
-              paymentStatus: paymentIntent.status
+              paymentId: result.paymentIntent.id,
+              paymentStatus: "SUCCESS"
             }
           });
         } catch (notifError) {
@@ -164,9 +162,13 @@ const StripePaymentInterface = () => {
         navigate('/orderConfirmed', { 
           state: { 
             orderId: orderId,
-            paymentId: paymentIntent.id
+            paymentId: result.paymentIntent.id,
+            paymentStatus: "SUCCESS"
           }
         });
+      } else {
+        setError('Payment failed. Please try again.');
+        return;
       }
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred while processing your payment.');
