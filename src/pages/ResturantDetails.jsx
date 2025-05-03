@@ -98,7 +98,7 @@ const ResturantDetails = () => {
               description: item.description,
               price: item.price,
               image:
-                item.image ||
+                item.imageUrl ||
                 `/api/placeholder/400/300?text=${encodeURIComponent(item.name)}`,
               popular: item.popular || false,
               isAvailable: item.isAvailable
@@ -166,19 +166,19 @@ const ResturantDetails = () => {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        
+
         <div className="absolute bottom-0 left-0 p-6 flex items-end space-x-4">
-        <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
-  <img
-    src={
-      restaurant.logo ||
-      restaurant.image ||
-      generateAvatarUrl(restaurant.name || restaurant.restaurantName)
-    }
-    alt={`${restaurant.name || restaurant.restaurantName} logo`}
-    className="w-full h-full object-cover"
-  />
-</div>
+          <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white bg-white shadow-lg">
+            <img
+              src={
+                restaurant.logo ||
+                restaurant.image ||
+                generateAvatarUrl(restaurant.name || restaurant.restaurantName)
+              }
+              alt={`${restaurant.name || restaurant.restaurantName} logo`}
+              className="w-full h-full object-cover"
+            />
+          </div>
           <div className="text-white">
             <h1 className="text-2xl font-bold">
               {restaurant.name || restaurant.restaurantName}
@@ -206,12 +206,12 @@ const ResturantDetails = () => {
             </div>
           </div>
         </div>
-        
+
         <button className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm p-2 rounded-full hover:bg-white/20 transition-colors">
           <Heart className="w-6 h-6 text-white" />
         </button>
       </div>
-      
+
       <div className="mt-6 flex flex-col md:flex-row md:space-x-8">
         {/* Category Navigation */}
         <aside className="md:w-1/4 mb-6 md:mb-0">
@@ -241,7 +241,7 @@ const ResturantDetails = () => {
             )}
           </div>
         </aside>
-        
+
         {/* Menu Items */}
         <div className="flex-1">
           {menuCategories.length > 0 ? (
@@ -252,7 +252,11 @@ const ResturantDetails = () => {
                   {category.items.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {category.items.map((item) => (
-                        <FoodieCard key={item.id} interactive={false} className="flex overflow-hidden">
+                        <FoodieCard
+                          key={item.id}
+                          interactive={false}
+                          className="flex overflow-hidden"
+                        >
                           <div className="flex-1 p-4">
                             {item.popular && (
                               <span className="inline-block bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full mb-2">
@@ -260,10 +264,12 @@ const ResturantDetails = () => {
                               </span>
                             )}
                             <h3 className="font-bold text-lg">{item.name}</h3>
-                            <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                            <p className="text-gray-600 text-sm mb-2">
+                              {item.description}
+                            </p>
                             <div className="flex items-center justify-between mt-auto">
                               <p className="font-bold text-gray-800">
-                                LKR {item.price.toFixed(2)}
+                                USD {item.price.toFixed(2)}
                               </p>
                               <div className="flex items-center">
                                 {getItemQuantity(item.id) > 0 ? (
@@ -306,7 +312,9 @@ const ResturantDetails = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500">No items available in this category</p>
+                    <p className="text-gray-500">
+                      No items available in this category
+                    </p>
                   )}
                 </div>
               ) : null
@@ -320,14 +328,14 @@ const ResturantDetails = () => {
           )}
         </div>
       </div>
-      
+
       {/* Cart Button */}
       {getTotalItems() > 0 && (
         <div className="fixed bottom-20 left-0 right-0 flex justify-center z-10 animate-fade-in">
           <FoodieButton
             className="px-8 py-4 shadow-lg"
             size="lg"
-            onClick={() => navigate('/cart')}
+            onClick={() => navigate("/cart")}
           >
             View Cart ({getTotalItems()} items)
           </FoodieButton>
