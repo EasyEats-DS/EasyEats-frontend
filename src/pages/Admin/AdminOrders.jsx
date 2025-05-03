@@ -5,6 +5,7 @@ import FoodieCard from '../../components/FoodieCard';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
 import { fetchAllOrdersNoPagination, updateOrderStatus, deleteOrder } from '../../lib/api/orders';
+import Swal from 'sweetalert2'
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -56,16 +57,35 @@ const AdminOrders = () => {
   };
 
   const handleDelete = async (orderId) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    try {
-      await deleteOrder(orderId);
-      setOrders(prev => prev.filter(o => o._id !== orderId));
-      setSelectedOrder(null);
-      alert("Order deleted successfully!");
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete order. Please try again.");
-    }
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteOrder(orderId);
+          setOrders(prev => prev.filter(o => o._id !== orderId));
+          setSelectedOrder(null);
+          Swal.fire({
+            title: "Deleted!",
+            text: "Order has been deleted successfully.",
+            icon: "success"
+          });
+        } catch (err) {
+          console.error("Delete failed:", err);
+          Swal.fire({
+            title: "Error",
+            text: "Failed to delete order. Please try again.",
+            icon: "error"
+          });
+        }
+      }
+    });
   };
 
   const getStatusBadge = (status) => {
