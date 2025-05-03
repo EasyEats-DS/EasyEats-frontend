@@ -5,58 +5,77 @@ import { getUserFromToken } from "../lib/auth";
 import { createOrder } from "../lib/api/orders";
 import { sendOrderConfirmation } from "../lib/api/notifications";
 import UserLayout from "../components/UserLayout";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Order = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  const { cartItems = [], promotion = 0, note = "", restaurantId } = location.state || {};
-  
-  const [deliveryAddress, setDeliveryAddress] = useState("SLIIT Campus, Malabe");
-  const [dropNote, setDropNote] = useState("Near Perera and Sons in front of SLIIT");
+
+  const {
+    cartItems = [],
+    promotion = 0,
+    note = "",
+    restaurantId,
+  } = location.state || {};
+
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    "SLIIT Campus, Malabe"
+  );
+  const [dropNote, setDropNote] = useState(
+    "Near Perera and Sons in front of SLIIT"
+  );
   const [deliveryType, setDeliveryType] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [submitting, setSubmitting] = useState(false);
 
-  const deliveryFee = deliveryType === "priority" ? 129 : 99;
-  const taxes = 62.07;
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = subtotal - promotion + deliveryFee + taxes;
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  // Calculate values dynamically based on percentages
+  const promotionAmount = subtotal * 0.05; // 5% of subtotal
+  const deliveryFeePercentage = 0.05; // 5% of subtotal
+  const deliveryFeeBase = subtotal * deliveryFeePercentage;
+  const deliveryFee =
+    deliveryType === "priority" ? deliveryFeeBase * 1.3 : deliveryFeeBase; // 30% more for priority
+  const taxes = subtotal * 0.02; // 2% of subtotal
+
+  const total = subtotal - promotionAmount + deliveryFee + taxes;
 
   const handlePlaceOrder = async () => {
     setSubmitting(true);
     try {
       const user = getUserFromToken();
-      const userId = user?.id || 'test-user';
-      
-    
+      const userId = user?.id || "test-user";
+
       const orderNumber = Math.floor(100 + Math.random() * 900);
       const orderId = `ORD-${orderNumber}`;
-      
+
       // Create order payload with orderId
       const orderPayload = {
         orderId,
         userId,
-        restaurantId: restaurantId || 'test-restaurant',
-        products: cartItems?.map((item) => ({
-          productId: item.id || 'test-product',
-          quantity: item.quantity || 1,
-          price: item.price || 0,
-        })) || [],
-        deliveryAddress: deliveryAddress || 'Test Address',
-        dropNote: dropNote || '',
-        deliveryType: deliveryType || 'standard',
+        restaurantId: restaurantId || "test-restaurant",
+        products:
+          cartItems?.map((item) => ({
+            productId: item.id || "test-product",
+            quantity: item.quantity || 1,
+            price: item.price || 0,
+          })) || [],
+        deliveryAddress: deliveryAddress || "Test Address",
+        dropNote: dropNote || "",
+        deliveryType: deliveryType || "standard",
         paymentMethod,
         totalAmount: total || 0,
-        note: note || '',
+        note: note || "",
       };
 
       if (paymentMethod === "cash") {
         // Create order first
         await createOrder(orderPayload);
-        
+
         // Send notification through both channels
         try {
           await sendOrderConfirmation({
@@ -69,7 +88,7 @@ const Order = () => {
               email: "dushanbolonghe@gmail.com",
               subject: "Order Confirmation - EasyEats",
               phone: "+94701615834",
-            }
+            },
           });
         } catch (notifError) {
           console.error("Failed to send notification:", notifError);
@@ -84,15 +103,14 @@ const Order = () => {
         localStorage.removeItem("cartRestaurantId");
         setTimeout(() => {
           navigate("/orderConfirmed");
-        },
-        2000);
+        }, 1000);
       } else {
         // Show toast notification for card payment
         toast.success("Proceeding to payment...", {
           position: "top-right",
           autoClose: 2000,
         });
-        
+
         // For card payment, navigate to StripePaymentInterface with orderId
         navigate("/stripe-payment-interface", {
           state: {
@@ -100,9 +118,9 @@ const Order = () => {
             orderId,
             orderPayload,
             userEmail: "dushanbolonghe@gmail.com",
-            userPhone: "+94701615834"
+            userPhone: "+94701615834",
           },
-          replace: true
+          replace: true,
         });
       }
     } catch (err) {
@@ -122,14 +140,14 @@ const Order = () => {
             <h2 className="text-2xl font-bold mb-6">Delivery Details</h2>
             <input
               value={deliveryAddress}
-              onChange={(e) => setDeliveryAddress(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4"
+              readOnly
+              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4 bg-gray-100 cursor-not-allowed"
               placeholder="Enter delivery address"
             />
             <input
               value={dropNote}
-              onChange={(e) => setDropNote(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              readOnly
+              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-100 cursor-not-allowed"
               placeholder="Drop-off note (optional)"
             />
           </div>
@@ -140,9 +158,13 @@ const Order = () => {
               {
                 label: "Priority",
                 value: "priority",
-                note: "10–25 min (+USD 129)",
+                note: `10–25 min (+USD ${deliveryFeeBase * 1.3})`,
               },
-              { label: "Standard", value: "standard", note: "15–30 min" },
+              {
+                label: "Standard",
+                value: "standard",
+                note: `15–30 min (+USD ${deliveryFeeBase})`,
+              },
             ].map((opt) => (
               <label
                 key={opt.value}
@@ -214,7 +236,9 @@ const Order = () => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="accent-orange-500 w-5 h-5"
                   />
-                  <span className="font-medium text-gray-700">Card Payment</span>
+                  <span className="font-medium text-gray-700">
+                    Card Payment
+                  </span>
                 </div>
                 <span className="text-sm text-gray-500">
                   Pay securely with your card
@@ -249,7 +273,7 @@ const Order = () => {
             </div>
             <div className="flex justify-between text-green-600">
               <span>Promotion</span>
-              <span>-USD {promotion.toFixed(2)}</span>
+              <span>-USD {promotionAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Delivery Fee</span>
