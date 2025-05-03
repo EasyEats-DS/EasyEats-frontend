@@ -89,7 +89,7 @@ const Cart = () => {
                     {item.name}
                   </h2>
                   <p className="text-gray-500 text-xs">
-                    LKR {item.price.toFixed(2)}
+                    USD {item.price.toFixed(2)}
                   </p>
                 </div>
               </div>
