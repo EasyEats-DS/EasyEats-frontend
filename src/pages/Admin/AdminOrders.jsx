@@ -20,6 +20,7 @@ const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [userRestaurants, setUserRestaurants] = useState([]);
+  const [userDetails, setUserDetails] = useState({});  // Store user details by userId
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -28,10 +29,6 @@ const AdminOrders = () => {
         const usersId = getUserFromToken();
         const restaurants = await restaurantService.getRestaurantsByOwnerId(usersId.id);
         setUserRestaurants(restaurants);
-        console.log("User Restaurants: ", restaurants);
-        const usersDetails = await userService.getUserById(usersId.id);
-        console.log("User Details: ", usersDetails);
-
         
         // Filter orders to only show those from user's restaurants
         if (restaurants && restaurants.length > 0) {
@@ -40,6 +37,26 @@ const AdminOrders = () => {
             order.restaurantId && restaurantIds.includes(order.restaurantId)
           );
           setOrders(filteredOrders);
+          
+          // Fetch user details for each order
+          const userIds = [...new Set(filteredOrders.map(order => order.userId))];
+          const usersData = {};
+          
+          // Fetch user details in parallel
+          await Promise.all(
+            userIds.map(async (userId) => {
+              try {
+                const userData = await userService.getUserById(userId);
+                console.log(`User data for ${userId}:`, userData);
+                usersData[userId] = userData;
+              } catch (error) {
+                console.error(`Failed to fetch user details for ID ${userId}:`, error);
+                usersData[userId] = { firstName: 'Unknown', phoneNumber: 'N/A' };
+              }
+            })
+          );
+          
+          setUserDetails(usersData);
         } else {
           setOrders([]);
         }
@@ -135,6 +152,15 @@ const AdminOrders = () => {
       : null;
   };
 
+  // Helper function to get user details by ID
+  const getUserInfo = (userId, field) => {
+    if (!userDetails[userId]) return 'Loading...';
+    
+    // Handle nested user object in the API response
+    const userData = userDetails[userId].user || userDetails[userId];
+    return userData[field] || 'Unknown';
+  };
+
   return (
     <AdminLayout title="Order Management">
       <div className="animate-fade-in">
@@ -192,7 +218,10 @@ const AdminOrders = () => {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-bold">Order #{order._id.slice(0, 6)}…</h3>
-                          <p className="text-foodie-gray-dark text-sm">User: {order.userId}</p>
+                          <p className="text-foodie-gray-dark text-sm">
+                            {getUserInfo(order.userId, 'firstName') || 'Customer'} • {getUserInfo(order.userId, 'phoneNumber')}
+                          </p>
+                          <p className="text-foodie-gray-dark text-xs">ID: {order.userId.slice(0, 8)}...</p>
                         </div>
                         {getStatusBadge(order.status)}
                       </div>
@@ -226,8 +255,11 @@ const AdminOrders = () => {
 
                 <div>
                   <h4 className="font-medium text-foodie-gray-dark mb-2">Order Info</h4>
+                  <p>Customer: {getUserInfo(selectedOrder.userId, 'firstName')} {getUserInfo(selectedOrder.userId, 'lastName')}</p>
                   <p>User ID: {selectedOrder.userId}</p>
-                  <p>Total Amount: LKR {selectedOrder.totalAmount.toFixed(2)}</p>
+                  <p>Phone: {getUserInfo(selectedOrder.userId, 'phoneNumber')}</p>
+                  <p>Email: {getUserInfo(selectedOrder.userId, 'email')}</p>
+                  <p>Total Amount: $ {selectedOrder.totalAmount.toFixed(2)}</p>
                   <p>Created At: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
                 </div>
 
