@@ -5,6 +5,8 @@ import { getUserFromToken } from "../lib/auth";
 import { createOrder } from "../lib/api/orders";
 import { sendOrderConfirmation } from "../lib/api/notifications";
 import UserLayout from "../components/UserLayout";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Order = () => {
   const location = useLocation();
@@ -72,15 +74,24 @@ const Order = () => {
           console.error("Failed to send notification:", notifError);
         }
 
+        toast.success("Order placed successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
-        navigate("/orderConfirmed", { 
-          state: { 
-            orderId: orderId 
-          }
-        });
+        setTimeout(() => {
+          navigate("/orderConfirmed");
+        },
+        2000);
       } else {
-        // For card payment, pass complete order payload
+        // Show toast notification for card payment
+        toast.success("Proceeding to payment...", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        
+        // For card payment, navigate to StripePaymentInterface with orderId
         navigate("/stripe-payment-interface", {
           state: {
             amount: total || 0,
@@ -127,7 +138,7 @@ const Order = () => {
               {
                 label: "Priority",
                 value: "priority",
-                note: "10–25 min (+LKR 129)",
+                note: "10–25 min (+USD 129)",
               },
               { label: "Standard", value: "standard", note: "15–30 min" },
             ].map((opt) => (
@@ -224,7 +235,7 @@ const Order = () => {
                 <span>
                   {item.name} × {item.quantity}
                 </span>
-                <span>LKR {(item.price * item.quantity).toFixed(2)}</span>
+                <span>USD {(item.price * item.quantity).toFixed(2)}</span>
               </li>
             ))}
           </ul>
@@ -232,23 +243,23 @@ const Order = () => {
           <div className="space-y-2 text-gray-700 text-base border-t pt-6">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>LKR {subtotal.toFixed(2)}</span>
+              <span>USD {subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-green-600">
               <span>Promotion</span>
-              <span>-LKR {promotion.toFixed(2)}</span>
+              <span>-USD {promotion.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Delivery Fee</span>
-              <span>LKR {deliveryFee.toFixed(2)}</span>
+              <span>USD {deliveryFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Taxes</span>
-              <span>LKR {taxes.toFixed(2)}</span>
+              <span>USD {taxes.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-bold border-t pt-4">
               <span>Total</span>
-              <span>LKR {total.toFixed(2)}</span>
+              <span>USD {total.toFixed(2)}</span>
             </div>
           </div>
 
@@ -263,6 +274,7 @@ const Order = () => {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </UserLayout>
   );
 };
