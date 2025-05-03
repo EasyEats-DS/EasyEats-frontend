@@ -25,7 +25,7 @@ const Refund = () => {
       setFormData(prev => ({
         ...prev,
         orderId: location.state.orderId,
-        amount: location.state.amount.toString()
+        amount: (location.state.amount / 100).toString()
       }));
     }
   }, [location.state]);

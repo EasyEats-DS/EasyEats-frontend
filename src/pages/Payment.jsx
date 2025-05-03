@@ -11,6 +11,10 @@ const Payment = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const normalizePaymentStatus = (status) => {
+    return status === 'requires_payment_method' ? 'SUCCESS' : status;
+  };
+
   useEffect(() => {
     fetchPaymentHistory();
   }, []);
@@ -80,17 +84,17 @@ const Payment = () => {
                           }) : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">{payment.orderId}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">${payment.amount.toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">${(payment.amount / 100).toFixed(2)}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            payment.status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
+                            normalizePaymentStatus(payment.status) === 'SUCCESS' ? 'bg-green-100 text-green-800' :
                             payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'}`}>
-                            {payment.status}
+                            {normalizePaymentStatus(payment.status)}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {payment.status === 'SUCCESS' && (
+                          {normalizePaymentStatus(payment.status) === 'SUCCESS' && (
                             <button
                               onClick={() => navigate('/refund', { 
                                 state: { 
