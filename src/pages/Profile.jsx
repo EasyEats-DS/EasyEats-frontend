@@ -19,6 +19,7 @@ import FoodieButton from "../components/FoodieButton";
 import { userService } from "../lib/api/users";
 import Avatar from 'boring-avatars';
 import {getUserFromToken} from "../lib/auth";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -124,6 +125,8 @@ const Profile = () => {
       };
       
       await userService.updateUserProfile(userId, updateData);
+      toast.success("Profile updated successfully!");
+
       
       // Update preferences if necessary
       // await userService.updateUserPreferences(userId, profileData.preferences);
@@ -131,7 +134,7 @@ const Profile = () => {
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Failed to update profile. Please try again.");
+      toast.error("Failed to update profile. Please try again later.");
     }
   };
 
@@ -308,7 +311,7 @@ const Profile = () => {
         </form>
 
         {/* Preferences Section */}
-        <div className="bg-white rounded-2xl shadow-md p-6 md:p-8">
+        <div className="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-14">
           <h2 className="text-xl font-bold text-gray-800 mb-6">Preferences</h2>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
