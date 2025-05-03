@@ -6,6 +6,9 @@ import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
 import { fetchAllOrdersNoPagination, updateOrderStatus, deleteOrder } from '../../lib/api/orders';
 import Swal from 'sweetalert2'
+import { getUserFromToken } from '../../lib/auth';
+import {restaurantService} from '../../lib/api/resturants';
+import {userService} from '../../lib/api/users';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -14,12 +17,30 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [userRestaurants, setUserRestaurants] = useState([]);
 
   useEffect(() => {
     const loadOrders = async () => {
       try {
         const fetched = await fetchAllOrdersNoPagination();
-        setOrders(fetched);
+        const usersId = getUserFromToken();
+        const restaurants = await restaurantService.getRestaurantsByOwnerId(usersId.id);
+        setUserRestaurants(restaurants);
+        console.log("User Restaurants: ", restaurants);
+        const usersDetails = await userService.getUserById(usersId.id);
+        console.log("User Details: ", usersDetails);
+
+        
+        // Filter orders to only show those from user's restaurants
+        if (restaurants && restaurants.length > 0) {
+          const restaurantIds = restaurants.map(restaurant => restaurant._id);
+          const filteredOrders = fetched.filter(order => 
+            order.restaurantId && restaurantIds.includes(order.restaurantId)
+          );
+          setOrders(filteredOrders);
+        } else {
+          setOrders([]);
+        }
       } catch (err) {
         console.error(err);
         setError("Failed to fetch orders.");
