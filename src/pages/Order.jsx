@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getUserFromToken } from "../lib/auth";
 import { createOrder } from "../lib/api/orders";
+import { sendOrderConfirmation } from "../lib/api/notifications";
 import UserLayout from "../components/UserLayout";
 
 const Order = () => {
@@ -26,11 +27,14 @@ const Order = () => {
     setSubmitting(true);
     try {
       const user = getUserFromToken();
-      // Make userId optional for testing
       const userId = user?.id || 'test-user';
       
-      // Create a minimal order payload for testing
+      // Generate a unique orderId
+      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create order payload with orderId
       const orderPayload = {
+        orderId,
         userId,
         restaurantId: restaurantId || 'test-restaurant',
         products: cartItems?.map((item) => ({
@@ -48,15 +52,34 @@ const Order = () => {
 
       if (paymentMethod === "cash") {
         await createOrder(orderPayload);
+        
+        // Send notification with hardcoded values
+        try {
+          await sendOrderConfirmation({
+            orderId,
+            userId,
+            customerEmail: "dushanbolonghe@gmail.com",
+            customerPhone: "+94701615834",
+            totalAmount: total,
+            preferredChannel: "EMAIL"
+          });
+        } catch (notifError) {
+          console.error("Failed to send notification:", notifError);
+          // Don't block the order confirmation even if notification fails
+        }
+
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
         navigate("/orderConfirmed");
       } else {
-        // For card payment, navigate to StripePaymentInterface
+        // For card payment, navigate to StripePaymentInterface with orderId
         navigate("/stripe-payment-interface", {
           state: {
             amount: total || 0,
-            orderPayload
+            orderId,
+            orderPayload,
+            userEmail: user.email,
+            userPhone: user.phone
           },
           replace: true
         });

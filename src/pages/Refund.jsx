@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { DollarSign, FileText, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import UserLayout from '../components/UserLayout';
@@ -9,6 +9,7 @@ import FoodieButton from '../components/FoodieButton';
 
 const Refund = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -17,6 +18,17 @@ const Refund = () => {
     amount: '',
     reason: ''
   });
+
+  // Initialize form data from location state
+  useEffect(() => {
+    if (location.state?.orderId && location.state?.amount) {
+      setFormData(prev => ({
+        ...prev,
+        orderId: location.state.orderId,
+        amount: location.state.amount.toString()
+      }));
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,11 +93,13 @@ const Refund = () => {
                 onChange={handleChange}
                 placeholder="Enter your order ID"
                 required
+                readOnly
+                className="bg-gray-50"
               />
 
               <div>
                 <FoodieInput
-                  label="Refund Amount ($)"
+                  label="Refund Amount (LKR)"
                   name="amount"
                   type="number"
                   step="0.01"
@@ -95,8 +109,10 @@ const Refund = () => {
                   placeholder="0.00"
                   icon={<DollarSign className="w-5 h-5" />}
                   required
+                  readOnly
+                  className="bg-gray-50"
                 />
-                <p className="mt-1 text-sm text-gray-500">Enter the amount in dollars (will be converted to cents)</p>
+                <p className="mt-1 text-sm text-gray-500">This amount is from your original payment</p>
               </div>
 
               <div>

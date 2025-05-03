@@ -23,21 +23,19 @@ function Notification() {
 
       // Decode the JWT token to get the user ID
       const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-      const userId = tokenPayload.userId;
+      const userId = tokenPayload.id; // Changed from userId to id to match token structure
 
-      const response = await axios.get(`http://localhost:5003/notifications/user/USER123`, {
+      const response = await axios.get(`http://localhost:5003/notifications/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      console.log('Notifications response:', response.data); // Debug log
-      
-      if (!response.data) {
-        throw new Error('No data received from server');
+      if (!response.data || !response.data.data) {
+        throw new Error('Invalid response format from server');
       }
       
-      const notifications = response.data?.data?.notifications || [];
+      const notifications = response.data.data.notifications || [];
       setNotifications(notifications);
       setLoading(false);
     } catch (err) {
@@ -60,24 +58,27 @@ function Notification() {
         return;
       }
       
-      console.log('Marking notification as read:', notificationId); // Debug log
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const userId = tokenPayload.id;
       
       const response = await axios.patch(
-        `http://localhost:5003/notifications/${notificationId}/read`,
-        {},
+        `http://localhost:5003/notifications/${notificationId}/markAsRead`,
+        { userId },
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         }
       );
-
-      console.log('Mark as read response:', response.data); // Debug log
-
-      // Update notification in state using _id
-      setNotifications(notifications.map(notif => 
-        notif._id === notificationId ? { ...notif, read: true } : notif
-      ));
+      
+      if (response.data.success) {
+        setNotifications(notifications.map(notif => 
+          notif._id === notificationId ? { ...notif, read: true } : notif
+        ));
+      } else {
+        throw new Error(response.data.message || 'Failed to mark notification as read');
+      }
     } catch (err) {
       console.error('Error marking notification as read:', err);
       setError(err.response?.data?.message || 'Failed to mark notification as read. Please try again.');
@@ -92,18 +93,21 @@ function Notification() {
         return;
       }
       
-      console.log('Deleting notification:', notificationId); // Debug log
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const userId = tokenPayload.id;
       
       const response = await axios.delete(`http://localhost:5003/notifications/${notificationId}`, {
         headers: {
           Authorization: `Bearer ${token}`
-        }
+        },
+        data: { userId } // Adding userId to request body for deletion
       });
 
-      console.log('Delete response:', response.data); // Debug log
-
-      // Update notifications in state using _id
-      setNotifications(notifications.filter(notif => notif._id !== notificationId));
+      if (response.data.success) {
+        setNotifications(notifications.filter(notif => notif._id !== notificationId));
+      } else {
+        throw new Error(response.data.message || 'Failed to delete notification');
+      }
     } catch (err) {
       console.error('Error deleting notification:', err);
       setError(err.response?.data?.message || 'Failed to delete notification. Please try again.');

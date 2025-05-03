@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import { paymentService } from '../lib/api/payments';
 import { getUserFromToken } from '../lib/auth';
+import { sendOrderConfirmation } from "../lib/api/notifications";
 
 const CARD_ELEMENT_OPTIONS = {
   classes: {
@@ -59,16 +60,19 @@ const StripePaymentInterface = () => {
     cardCvc: false
   });
 
-  const { amount, orderPayload } = location.state || {};
+  const { amount, orderId, orderPayload, userEmail, userPhone } = location.state || {};
+  const user = getUserFromToken();
+  const userId = user?.id;
 
   useEffect(() => {
-    if (!amount) {
-      setError('Payment amount is missing. Please try placing your order again.');
+    if (!amount || !orderId || !userId) {
+      setError('Required payment information is missing. Please try again.');
       setTimeout(() => {
         navigate('/order');
       }, 3000);
+      return;
     }
-  }, [amount, navigate]);
+  }, [amount, orderId, userId, navigate]);
 
   useEffect(() => {
     const styleElement = document.createElement('style');
@@ -95,26 +99,13 @@ const StripePaymentInterface = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    // Get user ID from token
-    const user = getUserFromToken();
-    const userId = user?.id;
-
     if (!stripe || !elements) {
       setError('Payment system is not initialized. Please try again.');
       return;
     }
 
-    if (!amount) {
-      setError('Payment amount is missing. Please try placing your order again.');
-      return;
-    }
-
-    // Removed strict orderPayload validation for testing
-    // Note: Re-enable this validation in production
-    const orderData = orderPayload || { orderId: 'test-order-' + Date.now() };
-
-    if (!userId) {
-      setError('User authentication is required. Please log in and try again.');
+    if (!amount || !orderId || !userId) {
+      setError('Required payment information is missing. Please try again.');
       return;
     }
 
@@ -129,10 +120,11 @@ const StripePaymentInterface = () => {
     try {
       const { clientSecret } = await paymentService.createPaymentIntent({
         amount: Math.round(amount * 100),
+        orderId,
+        userId,
         currency: 'LKR',
         paymentMethod: 'CARD',
-        userId,
-        orderPayload: orderData
+        orderPayload
       });
 
       const cardNumber = elements.getElement(CardNumberElement);
@@ -152,11 +144,30 @@ const StripePaymentInterface = () => {
       }
 
       if (paymentIntent.status === 'succeeded') {
+        // Send notification for successful order
+        try {
+          await sendOrderConfirmation({
+            orderId,
+            userId,
+            customerEmail: "dushanbolonghe@gmail.com",
+            customerPhone: "+94701615834",
+            totalAmount: amount,
+            preferredChannel: "EMAIL",
+            metadata: {
+              email: "dushanbolonghe@gmail.com",
+              subject: "Order Confirmation - EasyEats"
+            }
+          });
+        } catch (notifError) {
+          console.error("Failed to send notification:", notifError);
+          // Don't block the order confirmation even if notification fails
+        }
+
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
         navigate('/orderConfirmed', { 
           state: { 
-            orderId: orderData.orderId,
+            orderId: orderId,
             paymentId: paymentIntent.id
           }
         });
