@@ -6,6 +6,7 @@ import axios from 'axios';
 import './DeliveryTrackingPage.css';
 //import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
 import { useSocket } from '../../components/banuka/SocketContext';
+import UserLayout from '../../components/UserLayout';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
@@ -168,6 +169,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
   );
 
   return (
+    <UserLayout title={"EasyEats - Delivery Tracking"}>
     <div className="delivery-tracking-container">
       <div className="map-container">
         <MapComponent 
@@ -192,6 +194,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
         />
       </div>
     </div>
+    </UserLayout>
   );
 };
 
