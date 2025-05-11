@@ -1,25 +1,40 @@
 /* src/pages/DeliveryTrackingPage.css */
+.body{
+  margin:0;
+}
 .delivery-tracking-container {
+  margin:0;
     display: flex;
-    height: calc(100vh - 60px); /* Adjust based on your header height */
+    height: calc(100vh - 60px);
     width: 100%;
-  }
+    position: relative;  /* Add this */
+}
   
-  .map-container {
+.map-container {
     flex: 2;
     height: 100%;
-    position: relative;
-  }
+    position: fixed;    /* Change to fixed position */
+    left: 10px;           /* Add this */
+    top: 60px;         /* Adjust based on your header height */
+    width: calc(100% - 400px); /* Approximately 2/3 of the space minus delivery list width */
+    overflow: hidden;  /* Change from overflow-y to overflow */
+}
   
-  .delivery-list-container {
-    flex: 1;
-    max-width: 400px;
-    overflow-y: auto;
-    padding: 20px;
-    background: #f8f9fa;
-    border-left: 1px solid #e0e0e0;
-  }
-  
+.py-6 {
+  padding-block: 0;
+}
+.delivery-list-container {
+  height: 85vh;
+  position: fixed;     /* ✅ Fix: make it fixed to align to viewport */
+  top: 60px;           /* ✅ Add this to align with your header */
+  max-width: 400px;
+  width: 400px;        /* ✅ Explicitly set width for better control */
+  overflow-y: auto;
+  padding: 0px;
+  background: #f8f9fa;
+  border-left: 1px solid #e0e0e0;
+  right: 0px;
+}
   .loading-container {
     display: flex;
     flex-direction: column;
@@ -67,6 +82,14 @@
   }
   
   @media (max-width: 768px) {
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      top: 0;
+  }
+
     .delivery-tracking-container {
       flex-direction: column;
     }
