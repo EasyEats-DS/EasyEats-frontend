@@ -6,7 +6,7 @@ import getCityName from './hooks/getCityName';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restuarentPng,
-  iconSize: [25, 25],
+  iconSize: [35, 35],
   iconAnchor: [12, 12],
   popupAnchor: [0, -10]
 });
