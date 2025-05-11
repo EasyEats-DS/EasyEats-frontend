@@ -7,6 +7,17 @@ const UserLayout = ({ children, title }) => {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  const userType = localStorage.getItem('userType');
+  const user = userType === 'driver' 
+    ? JSON.parse(localStorage.getItem('driver'))
+    : JSON.parse(localStorage.getItem('Customer'));
+
+    const mapLink = userType? userType === 'driver'
+    ? "/driver/map"
+    : "/customer/map"
+    : "/login";
+
+
   return (
     <div className="flex flex-col min-h-screen bg-foodie-gray-light">
       {/* Header */}
@@ -43,6 +54,13 @@ const UserLayout = ({ children, title }) => {
             >
               Payments
             </button>
+            <button
+              onClick={() => navigate(mapLink)}
+              className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
+            >
+              Map
+              </button>
+
           </div>
           <div className="flex items-center gap-1 md:gap-3">
             <button
