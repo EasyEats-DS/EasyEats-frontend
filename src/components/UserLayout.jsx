@@ -1,11 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Search, ShoppingCart, User, Menu } from "lucide-react";
+import { Home, Search, ShoppingCart, User, Menu, CreditCard } from "lucide-react";
 import Cart from "../pages/Cart";
 
 const UserLayout = ({ children, title }) => {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const userType = localStorage.getItem('userType');
+  const user = userType === 'driver' 
+    ? JSON.parse(localStorage.getItem('driver'))
+    : JSON.parse(localStorage.getItem('Customer'));
+
+    const mapLink = userType? userType === 'driver'
+    ? "/driver/map"
+    : "/customer/map"
+    : "/login";
+
 
   return (
     <div className="flex flex-col min-h-screen bg-foodie-gray-light">
@@ -14,7 +25,7 @@ const UserLayout = ({ children, title }) => {
         <div className="container max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Menu className="w-6 h-6 lg:hidden text-foodie-charcoal" />
-            <h1 className="text-xl font-bold text-gradient">
+            <h1 className="text-xl font-bold text-gradient" onClick={() => navigate("/")}>
               {title || "EasyEats"}
             </h1>
           </div>
@@ -32,11 +43,24 @@ const UserLayout = ({ children, title }) => {
               Restaurants
             </button>
             <button
-              onClick={() => navigate("/orders")}
+              onClick={() => navigate("/viewOrder")}
               className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
             >
               Orders
             </button>
+            <button
+              onClick={() => navigate("/payment")}
+              className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
+            >
+              Payments
+            </button>
+            <button
+              onClick={() => navigate(mapLink)}
+              className="text-foodie-charcoal hover:text-foodie-orange transition-colors"
+            >
+              Map
+              </button>
+
           </div>
           <div className="flex items-center gap-1 md:gap-3">
             <button
@@ -112,6 +136,13 @@ const UserLayout = ({ children, title }) => {
               3
             </span>
             <span className="text-xs mt-1">Cart</span>
+          </button>
+          <button
+            onClick={() => navigate("/payment")}
+            className="flex flex-col items-center text-foodie-gray-dark hover:text-foodie-orange transition-colors"
+          >
+            <CreditCard className="w-6 h-6" />
+            <span className="text-xs mt-1">Payments</span>
           </button>
           <button
             onClick={() => navigate("/profile")}

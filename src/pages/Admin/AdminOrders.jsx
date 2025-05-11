@@ -4,7 +4,13 @@ import AdminLayout from '../../components/AdminLayout';
 import FoodieCard from '../../components/FoodieCard';
 import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
-import { fetchAllOrders, updateOrderStatus } from '../../lib/api/orders'; // ✅ Also import updateOrderStatus
+import { fetchAllOrdersNoPagination, updateOrderStatus, deleteOrder } from '../../lib/api/orders';
+import Swal from 'sweetalert2'
+import { getUserFromToken } from '../../lib/auth';
+import {restaurantService} from '../../lib/api/resturants';
+import {userService} from '../../lib/api/users';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -13,13 +19,47 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [userRestaurants, setUserRestaurants] = useState([]);
+  const [userDetails, setUserDetails] = useState({});  // Store user details by userId
 
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const fetchedOrders = await fetchAllOrders();
-        console.log("Fetched Orders:", fetchedOrders);
-        setOrders(fetchedOrders);
+        const fetched = await fetchAllOrdersNoPagination();
+        const usersId = getUserFromToken();
+        const restaurants = await restaurantService.getRestaurantsByOwnerId(usersId.id);
+        setUserRestaurants(restaurants);
+        
+        // Filter orders to only show those from user's restaurants
+        if (restaurants && restaurants.length > 0) {
+          const restaurantIds = restaurants.map(restaurant => restaurant._id);
+          const filteredOrders = fetched.filter(order => 
+            order.restaurantId && restaurantIds.includes(order.restaurantId)
+          );
+          setOrders(filteredOrders);
+          
+          // Fetch user details for each order
+          const userIds = [...new Set(filteredOrders.map(order => order.userId))];
+          const usersData = {};
+          
+          // Fetch user details in parallel
+          await Promise.all(
+            userIds.map(async (userId) => {
+              try {
+                const userData = await userService.getUserById(userId);
+                console.log(`User data for ${userId}:`, userData);
+                usersData[userId] = userData;
+              } catch (error) {
+                console.error(`Failed to fetch user details for ID ${userId}:`, error);
+                usersData[userId] = { firstName: 'Unknown', phoneNumber: 'N/A' };
+              }
+            })
+          );
+          
+          setUserDetails(usersData);
+        } else {
+          setOrders([]);
+        }
       } catch (err) {
         console.error(err);
         setError("Failed to fetch orders.");
@@ -31,10 +71,10 @@ const AdminOrders = () => {
   }, []);
 
   const filteredOrders = orders
-    .filter((order) =>
+    .filter(order =>
       order._id.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter((order) => statusFilter === 'all' || order.status === statusFilter);
+    .filter(order => statusFilter === 'all' || order.status === statusFilter);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
@@ -43,44 +83,82 @@ const AdminOrders = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await updateOrderStatus(orderId, newStatus);
-
-      // Update both orders array and selectedOrder
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
+      setOrders(prev =>
+        prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o)
       );
-
-      if (selectedOrder && selectedOrder._id === orderId) {
-        setSelectedOrder((prevSelected) => ({
-          ...prevSelected,
-          status: newStatus,
-        }));
+      if (selectedOrder?._id === orderId) {
+        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
       }
-
-      alert("Order status updated successfully!");
-
-    } catch (error) {
-      console.error("Failed to update order status:", error);
-      alert("Failed to update order status. Please try again.");
+      
+      // Toast notification for success
+      toast.success(`Order status updated to ${newStatus} successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+      
+      // Toast notification for error
+      toast.error(`Failed to update order status: ${err.response?.data?.message || "Please try again."}`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
+  const handleDelete = async (orderId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteOrder(orderId);
+          setOrders(prev => prev.filter(o => o._id !== orderId));
+          setSelectedOrder(null);
+          Swal.fire({
+            title: "Deleted!",
+            text: "Order has been deleted successfully.",
+            icon: "success"
+          });
+        } catch (err) {
+          console.error("Delete failed:", err);
+          Swal.fire({
+            title: "Error",
+            text: "Failed to delete order. Please try again.",
+            icon: "error"
+          });
+        }
+      }
+    });
+  };
+
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'pending':
-        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
-      case 'processing':
-        return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Processing</span>;
-      case 'shipped':
-        return <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Shipped</span>;
-      case 'delivered':
-        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Delivered</span>;
-      case 'cancelled':
-        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelled</span>;
-      default:
-        return null;
-    }
+    const map = {
+      pending:  ["Pending", "bg-yellow-100 text-yellow-800"],
+      processing: ["Processing","bg-blue-100 text-blue-800"],
+      shipped:   ["Shipped",   "bg-purple-100 text-purple-800"],
+      delivered: ["Delivered","bg-green-100 text-green-800"],
+      cancelled: ["Cancelled","bg-red-100 text-red-800"],
+    };
+    const [label, cls] = map[status] || [];
+    return label
+      ? <span className={`px-3 py-1 rounded-full text-xs font-medium ${cls}`}>{label}</span>
+      : null;
+  };
+
+  // Helper function to get user details by ID
+  const getUserInfo = (userId, field) => {
+    if (!userDetails[userId]) return 'Loading...';
+    
+    // Handle nested user object in the API response
+    const userData = userDetails[userId].user || userDetails[userId];
+    return userData[field] || 'Unknown';
   };
 
   return (
@@ -101,7 +179,7 @@ const AdminOrders = () => {
                 <div className="relative min-w-[150px]">
                   <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={e => setStatusFilter(e.target.value)}
                     className="w-full bg-foodie-gray-light rounded-lg px-4 py-3 appearance-none border border-foodie-gray focus:outline-none focus:border-foodie-orange"
                   >
                     <option value="all">All Orders</option>
@@ -129,24 +207,24 @@ const AdminOrders = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredOrders.map((order) => (
+                  {filteredOrders.map(order => (
                     <FoodieCard
                       key={order._id}
                       className={`cursor-pointer transition-all ${
-                        selectedOrder && selectedOrder._id === order._id
-                          ? 'border-2 border-foodie-orange'
-                          : ''
+                        selectedOrder?._id === order._id ? 'border-2 border-foodie-orange' : ''
                       }`}
                       onClick={() => handleOrderClick(order)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-bold">Order #{order._id.slice(0, 6)}...</h3>
-                          <p className="text-foodie-gray-dark text-sm">User: {order.userId}</p>
+                          <h3 className="font-bold">Order #{order._id.slice(0, 6)}…</h3>
+                          <p className="text-foodie-gray-dark text-sm">
+                            {getUserInfo(order.userId, 'firstName') || 'Customer'} • {getUserInfo(order.userId, 'phoneNumber')}
+                          </p>
+                          <p className="text-foodie-gray-dark text-xs">ID: {order.userId.slice(0, 8)}...</p>
                         </div>
                         {getStatusBadge(order.status)}
                       </div>
-
                       <div className="flex justify-between items-center border-t border-foodie-gray pt-3">
                         <div className="flex items-center text-sm text-foodie-gray-dark">
                           <Clock className="w-4 h-4 mr-1" />
@@ -157,7 +235,7 @@ const AdminOrders = () => {
                             })}
                           </span>
                         </div>
-                        <p className="font-bold">LKR {order.totalAmount.toFixed(2)}</p>
+                        <p className="font-bold">$ {order.totalAmount.toFixed(2)}</p>
                       </div>
                     </FoodieCard>
                   ))}
@@ -171,14 +249,17 @@ const AdminOrders = () => {
             {selectedOrder ? (
               <FoodieCard interactive={false} className="sticky top-24 space-y-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-lg">Order #{selectedOrder._id.slice(0, 6)}...</h3>
+                  <h3 className="font-bold text-lg">Order #{selectedOrder._id.slice(0,6)}…</h3>
                   {getStatusBadge(selectedOrder.status)}
                 </div>
 
                 <div>
                   <h4 className="font-medium text-foodie-gray-dark mb-2">Order Info</h4>
+                  <p>Customer: {getUserInfo(selectedOrder.userId, 'firstName')} {getUserInfo(selectedOrder.userId, 'lastName')}</p>
                   <p>User ID: {selectedOrder.userId}</p>
-                  <p>Total Amount: LKR {selectedOrder.totalAmount.toFixed(2)}</p>
+                  <p>Phone: {getUserInfo(selectedOrder.userId, 'phoneNumber')}</p>
+                  <p>Email: {getUserInfo(selectedOrder.userId, 'email')}</p>
+                  <p>Total Amount: $ {selectedOrder.totalAmount.toFixed(2)}</p>
                   <p>Created At: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
                 </div>
 
@@ -186,7 +267,7 @@ const AdminOrders = () => {
                   <h4 className="font-medium text-foodie-gray-dark mb-2">Update Status</h4>
                   <select
                     value={selectedOrder.status}
-                    onChange={(e) => handleStatusChange(selectedOrder._id, e.target.value)}
+                    onChange={e => handleStatusChange(selectedOrder._id, e.target.value)}
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="pending">Pending</option>
@@ -195,6 +276,15 @@ const AdminOrders = () => {
                     <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
+                </div>
+
+                {/* Delete button */}
+                <div className="mt-3">
+                  <FoodieButton variant="outline" className="w-full py-2 text-sm border-foodie-red text-foodie-red hover:bg-foodie-red/10 transition-colors duration-200"
+                  onClick={() => handleDelete(selectedOrder._id)}
+                >
+                  Delete Order
+                  </FoodieButton>
                 </div>
               </FoodieCard>
             ) : (
@@ -211,6 +301,7 @@ const AdminOrders = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </AdminLayout>
   );
 };

@@ -58,16 +58,47 @@ function ViewOrders() {
                     Order #{order._id.slice(0, 8)}
                   </h2>
                   <p className="text-sm text-gray-500">
-                    Status: <span className="font-semibold capitalize text-gray-700">{order.status}</span>
+                    Status: <span className={`font-semibold capitalize ${
+                      order.status === 'shipped' ? 'text-green-600' : 'text-orange-500'
+                    }`}>{order.status}</span>
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Ordered on: {new Date(order.createdAt).toLocaleDateString()}
+                    Ordered on: {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </p>
+                  
+                  {/* Ordered Items Section */}
+                  <div className="mt-4 border-t border-gray-100 pt-3">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Items Ordered:</h3>
+                    <div className="space-y-2">
+                      {order.products && order.products.map((product, index) => (
+                        <div key={product._id} className="flex justify-between text-sm bg-gray-50 p-3 rounded">
+                          <div className="flex items-start">
+                            <div className="h-5 w-5 rounded-full bg-orange-100 flex items-center justify-center text-xs text-orange-600 font-medium mr-2">
+                              {product.quantity}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-800">Product {index + 1}</p>
+                              <p className="text-xs text-gray-500">ID: {product.productId.slice(-6)}</p>
+                            </div>
+                          </div>
+                          <p className="font-medium text-gray-700">
+                            USD {(product.price * product.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center border-t border-gray-200 pt-4">
-                  <p className="text-gray-700 font-medium">Total:</p>
-                  <p className="text-lg font-bold text-orange-500">LKR {order.totalAmount.toFixed(2)}</p>
+                  <div>
+                    <p className="text-xs text-gray-500">Payment Method</p>
+                    <p className="text-sm font-medium text-gray-700 capitalize">{order.paymentMethod}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Total Payable Amount</p>
+                    <p className="text-lg font-bold text-orange-500">USD {order.totalAmount.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             ))}
