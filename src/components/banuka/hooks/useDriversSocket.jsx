@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { getCurrentUser, isDriver } from '../../../lib/auth';
 
 
 
@@ -19,8 +20,8 @@ export default function useDriversSocket() {
 
   const socketRef = useRef(null); // Store socket globally
 
-  const userType = localStorage.getItem('userType');
-  const loggedInDriver = userType === 'driver' ? JSON.parse(localStorage.getItem('driver')) : JSON.parse(localStorage.getItem('Customer'));
+  const loggedInDriver = getCurrentUser();
+  const userType = isDriver(loggedInDriver) ? 'driver' : 'customer';
 
 // ✅ Send location with global socket ref
   const sendLiveLocation = (location,user) => {

@@ -7,6 +7,7 @@ import './DeliveryTrackingPage.css';
 //import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
 import { useSocket } from '../../components/banuka/SocketContext';
 import UserLayout from '../../components/UserLayout';
+import { getCurrentUser } from '../../lib/auth';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
@@ -23,9 +24,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
   const [error, setError] = useState(null);
   const [routePath, setRoutePath] = useState([]);
   const [highlightedDriver, setHighlightedDriver] = useState(null);
-  const currentUser = userRole === 'driver' 
-    ? JSON.parse(localStorage.getItem('driver')) 
-    : JSON.parse(localStorage.getItem('Customer'));
+  const currentUser = getCurrentUser();
   
     const token = localStorage.getItem('authToken');
     console.log("token_______:", token);

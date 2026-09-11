@@ -22,6 +22,7 @@ import AdminEarnings from "./pages/Admin/AdminEarnings";
 import AdminSettings from "./pages/Admin/AdminSettings";
 import AdminProfile from "./pages/Admin/AdminProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { CUSTOMER_ONLY, OWNER_ONLY, SUPER_ADMIN_ONLY, DRIVER_ONLY } from "./lib/access";
 import ViewOrders from "./pages/viewOrders";
 // import useDriversSocket from "./components/banuka/hooks/useDriversSocket";
 import Refund from "./pages/Refund";
@@ -104,39 +105,39 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgetPassword />} />
 
           {/* Protected Routes */}
-          <Route path="/driver/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
-          <Route path="/customer/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
+          <Route path="/driver/map" element={<ProtectedRoute allowedRoles={DRIVER_ONLY}><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
+          <Route path="/customer/map" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
 
-          <Route path="/" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
-          <Route path="/list" element={<ProtectedRoute><Home/></ProtectedRoute>} />
-          <Route path="/restaurant" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
-          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-          <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />
-          <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-          <Route path="/restaurant/:id" element={<ProtectedRoute><ResturantDetails /></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Resturant /></ProtectedRoute>} />
+          <Route path="/list" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Home/></ProtectedRoute>} />
+          <Route path="/restaurant" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Resturant /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Cart /></ProtectedRoute>} />
+          <Route path="/order" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Order /></ProtectedRoute>} />
+          <Route path="/payment" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Payment /></ProtectedRoute>} />
+          <Route path="/restaurant/:id" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><ResturantDetails /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-          <Route path="/orderConfirmed" element={<ProtectedRoute><OrderConfirmed /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Search /></ProtectedRoute>} />
+          <Route path="/orderConfirmed" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><OrderConfirmed /></ProtectedRoute>} />
           <Route path="/notification" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
-          <Route path="/refund" element={<ProtectedRoute><Refund /></ProtectedRoute>} />
-          <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard/></ProtectedRoute>} />
-          <Route path="/admin/menu" element={<ProtectedRoute><AdminMenu/></ProtectedRoute>} />
-          <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders/></ProtectedRoute>} />
-          <Route path="/admin/earnings" element={<ProtectedRoute><AdminEarnings/></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings/></ProtectedRoute>} />
-          <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile/></ProtectedRoute>} />
-          <Route path="/viewOrder" element={<ProtectedRoute><ViewOrders /></ProtectedRoute>} />
-          <Route path="/stripepayment" element={<ProtectedRoute><StripePayment /></ProtectedRoute>} />
-          <Route path="/stripe-payment-interface" element={<ProtectedRoute><StripePaymentInterface /></ProtectedRoute>} />
-          <Route path="/create-restaurant" element={<ProtectedRoute><CreateResturant /></ProtectedRoute>} />
+          <Route path="/refund" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><Refund /></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminDashboard/></ProtectedRoute>} />
+          <Route path="/admin/menu" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminMenu/></ProtectedRoute>} />
+          <Route path="/admin/orders" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminOrders/></ProtectedRoute>} />
+          <Route path="/admin/earnings" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminEarnings/></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminSettings/></ProtectedRoute>} />
+          <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><AdminProfile/></ProtectedRoute>} />
+          <Route path="/viewOrder" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><ViewOrders /></ProtectedRoute>} />
+          <Route path="/stripepayment" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><StripePayment /></ProtectedRoute>} />
+          <Route path="/stripe-payment-interface" element={<ProtectedRoute allowedRoles={CUSTOMER_ONLY}><StripePaymentInterface /></ProtectedRoute>} />
+          <Route path="/create-restaurant" element={<ProtectedRoute allowedRoles={OWNER_ONLY}><CreateResturant /></ProtectedRoute>} />
 
 
           {/* Super Admin Routes */}
-          <Route path="/superadmin/dashboard" element={<ProtectedRoute><SuperAdminDashboard/></ProtectedRoute>} />
-          <Route path="superadmin/restaurants" element={<ProtectedRoute><SuperAdminRestaurants /></ProtectedRoute>} />
-          <Route path="superadmin/users" element={<ProtectedRoute><SuperAdminUsers /></ProtectedRoute>} />
-          <Route path="superadmin/orders" element={<ProtectedRoute><SuperAdminOrders /></ProtectedRoute>} />
-          <Route path="superadmin/payments" element={<ProtectedRoute><SuperAdminPayments /></ProtectedRoute>} />
+          <Route path="/superadmin/dashboard" element={<ProtectedRoute allowedRoles={SUPER_ADMIN_ONLY}><SuperAdminDashboard/></ProtectedRoute>} />
+          <Route path="superadmin/restaurants" element={<ProtectedRoute allowedRoles={SUPER_ADMIN_ONLY}><SuperAdminRestaurants /></ProtectedRoute>} />
+          <Route path="superadmin/users" element={<ProtectedRoute allowedRoles={SUPER_ADMIN_ONLY}><SuperAdminUsers /></ProtectedRoute>} />
+          <Route path="superadmin/orders" element={<ProtectedRoute allowedRoles={SUPER_ADMIN_ONLY}><SuperAdminOrders /></ProtectedRoute>} />
+          <Route path="superadmin/payments" element={<ProtectedRoute allowedRoles={SUPER_ADMIN_ONLY}><SuperAdminPayments /></ProtectedRoute>} />
 
           {/* Catch-all route */}
 

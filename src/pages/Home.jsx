@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { getCurrentUser, isDriver } from '../lib/auth';
 //import useDriversSocket from "../components/banuka/hooks/useDriversSocket";
 
 
@@ -7,10 +8,8 @@ import { Link } from "react-router-dom";
 
 const Home = () => {
   //const usersSocket = useDriversSocket();
-  const userType = localStorage.getItem('userType');
-  const user = userType === 'driver' 
-    ? JSON.parse(localStorage.getItem('driver'))
-    : JSON.parse(localStorage.getItem('Customer'));
+  const user = getCurrentUser();
+  const userType = isDriver(user) ? 'driver' : 'customer';
 
   const cards = [
     {

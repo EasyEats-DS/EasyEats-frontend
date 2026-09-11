@@ -18,7 +18,7 @@ import FoodieInput from "../components/FoodieInput";
 import FoodieButton from "../components/FoodieButton";
 import { userService } from "../lib/api/users";
 import Avatar from 'boring-avatars';
-import {getUserFromToken} from "../lib/auth";
+import {getUserFromToken, logout} from "../lib/auth";
 import { toast } from "react-toastify";
 
 const Profile = () => {
@@ -138,14 +138,10 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    // replace, so Back cannot return to a signed-in screen.
+    navigate("/login", { replace: true });
   };
 
   const handleViewOrders = () => {

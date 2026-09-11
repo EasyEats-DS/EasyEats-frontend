@@ -5,20 +5,17 @@ import {
   LayoutDashboard, Settings, UserCog, Building, 
   Users, Database, Server, Shield, X, LogOut,FileText 
 } from 'lucide-react';
+import { logout } from '../lib/auth';
 
 const SuperAdminLayout = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
 
-  const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    // replace, so Back cannot return to a signed-in screen.
+    navigate("/login", { replace: true });
   };
 
   const menuItems = [

@@ -10,6 +10,7 @@ import L from 'leaflet';
 import axios from 'axios';
 
 import { useSocket } from './SocketContext';
+import { getCurrentUser } from '../../lib/auth';
 
 // Fix default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -58,7 +59,7 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
     
     console.log("maps___________")
     console.log("availableDriversN: ",availableDrivers)
-    const currentUser = userRole === 'driver' ? JSON.parse(localStorage.getItem('driver')) : JSON.parse(localStorage.getItem('Customer'));
+    const currentUser = getCurrentUser();
     setCurrentUser(currentUser);
     
     if ("geolocation" in navigator) {
@@ -106,8 +107,8 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
     const fetchRoute = async () => {
       try {
         if (userRole === 'driver') {
-          const driver = JSON.parse(localStorage.getItem('driver'));
-          const driverId = driver._id;
+          const driver = getCurrentUser();
+          const driverId = driver?._id;
           const delivery = await axios.get(`${BASE_URL}/deliveries/driver/${driverId}`,
             {
               headers: {

@@ -4,7 +4,7 @@ import {
   Home, Settings, ShoppingCart, Menu as MenuIcon, 
   User, X, CreditCard, Package, LogOut
 } from 'lucide-react';
-import { getUserFromToken } from '../lib/auth';
+import { getUserFromToken, logout } from '../lib/auth';
 import {restaurantService} from '../lib/api/resturants';
 
 const AdminLayout = ({ children, title }) => {
@@ -45,14 +45,10 @@ const AdminLayout = ({ children, title }) => {
     // { icon: X, label: 'Restaurant Creation', path: '/admin/restaurant-creation' },
   ];
 
-  const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    // replace, so Back cannot return to a signed-in screen.
+    navigate("/login", { replace: true });
   };
 
   return (

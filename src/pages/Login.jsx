@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ROLES, homeRouteForRole } from "../lib/auth";
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ChevronRight } from 'lucide-react';
 import FoodieButton from '../components/FoodieButton';
@@ -7,7 +8,6 @@ import axios from 'axios';
 import CryptoJS from 'crypto-js'; // Add this import
 import { toast } from 'react-toastify';
 
-import handleLoginSuccess from '../utils/handleLoginSuccess';
 
 
 const Login = () => {
@@ -45,38 +45,27 @@ const Login = () => {
       });
 
       const { token, user } = response.data.data; // Assuming the response includes user data
-      handleLoginSuccess(user, token); // Call the utility function to handle login success
-      
       if (token) {
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user)); // Store user data including role
       }
   
-      // Redirect based on user role
-      if (user.role === "RESTAURANT_OWNER") {
-        // Check if they already have a restaurant
+      // Every role has a home route; owners additionally need onboarding when
+      // they haven't created their restaurant yet.
+      if (user.role === ROLES.RESTAURANT_OWNER) {
         try {
           const restaurantResponse = await axios.get(`${BASE_URL}/restaurants/owner/${user._id}`);
-          // console.log("Restaurant check response:", restaurantResponse);
-          
-          // Check if the response array has items
-          if (restaurantResponse.data.length > 0) {
-            navigate("/admin/dashboard"); // User has a restaurant
-          } else {
-            navigate("/create-restaurant"); // User doesn't have a restaurant
-          }
+          navigate(
+            restaurantResponse.data.length > 0
+              ? homeRouteForRole(ROLES.RESTAURANT_OWNER)
+              : "/create-restaurant"
+          );
         } catch (error) {
           console.error("Error checking restaurant:", error);
-          // If there's an error checking, navigate to create restaurant
           navigate("/create-restaurant");
         }
-      }
-      else if (user.role === "SUPER_ADMIN") {
-        navigate("/superadmin/dashboard"); // Redirect to Super Admin dashboard
-      }
-      else {
-        // Default redirect for other roles
-        navigate("/");
+      } else {
+        navigate(homeRouteForRole(user.role));
       }
     } catch (err) {
       console.error("Login error:", err);
