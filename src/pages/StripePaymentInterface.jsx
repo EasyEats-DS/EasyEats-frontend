@@ -3,7 +3,7 @@ import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useEle
 import { useNavigate, useLocation } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import { paymentService } from '../lib/api/payments';
-import { getUserFromToken } from '../lib/auth';
+import { getCurrentUser, getUserFromToken } from '../lib/auth';
 import { sendOrderConfirmation } from "../lib/api/notifications";
 import { createOrder } from "../lib/api/orders";
 
@@ -62,6 +62,12 @@ const StripePaymentInterface = () => {
   const { amount, orderId, orderPayload, userEmail, userPhone } = location.state || {};
   const user = getUserFromToken();
   const userId = user?.id;
+  // The customer to confirm to: what checkout handed over, else the signed-in
+  // account. Previously a single hardcoded address received every order.
+  const account = getCurrentUser();
+  const customerEmail = userEmail || account?.email || "";
+  const customerPhone = userPhone || account?.phoneNumber || account?.phone || "";
+
 
   useEffect(() => {
     if (!amount || !orderId || !userId) {
@@ -141,13 +147,13 @@ const StripePaymentInterface = () => {
           await sendOrderConfirmation({
             orderId: orderId.substring(0, 7),
             userId,
-            customerEmail: "dushanbolonghe@gmail.com",
-            customerPhone: "+94701615834",
+            customerEmail,
+            customerPhone,
             totalAmount: amount,
             metadata: {
-              email: "dushanbolonghe@gmail.com",
+              email: customerEmail,
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834",
+              phone: customerPhone,
               paymentId: result.paymentIntent.id,
               paymentStatus: "SUCCESS"
             }

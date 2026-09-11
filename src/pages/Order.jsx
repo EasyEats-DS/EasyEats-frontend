@@ -1,10 +1,11 @@
 // src/pages/Order.jsx
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getUserFromToken } from "../lib/auth";
+import { getCurrentUser, getUserFromToken } from "../lib/auth";
 import { createOrder } from "../lib/api/orders";
 import { sendOrderConfirmation } from "../lib/api/notifications";
 import UserLayout from "../components/UserLayout";
+import LocationPicker from "../components/LocationPicker";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -19,12 +20,11 @@ const Order = () => {
     restaurantId,
   } = location.state || {};
 
-  const [deliveryAddress, setDeliveryAddress] = useState(
-    "SLIIT Campus, Malabe"
-  );
-  const [dropNote, setDropNote] = useState(
-    "Near Perera and Sons in front of SLIIT"
-  );
+  // The address used to be a hardcoded read-only string, so every order was
+  // delivered to wherever the customer's browser last reported being. It is now
+  // whatever they pin on the map.
+  const [dropoff, setDropoff] = useState({ coordinates: null, address: "" });
+  const [dropNote, setDropNote] = useState("");
   const [deliveryType, setDeliveryType] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [submitting, setSubmitting] = useState(false);
@@ -45,10 +45,35 @@ const Order = () => {
   const total = subtotal - promotionAmount + deliveryFee + taxes;
 
   const handlePlaceOrder = async () => {
+    const user = getUserFromToken();
+    const userId = user?.id;
+
+    // Refuse an order that cannot be fulfilled instead of sending placeholder
+    // ids downstream. "test-restaurant" and "test-user" reached the gateway as
+    // real values and came back as a confusing 404 several services later.
+    const problem =
+      (!userId && "Please sign in again before placing your order.") ||
+      (!restaurantId && "This order is not linked to a restaurant. Please rebuild your cart.") ||
+      (cartItems.length === 0 && "Your cart is empty.") ||
+      (cartItems.some((item) => !item.id) && "One of your items is missing a product id.") ||
+      (!dropoff.coordinates && "Please choose your delivery location on the map.") ||
+      null;
+
+    if (problem) {
+      toast.error(problem, { position: "top-right", autoClose: 4000 });
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const user = getUserFromToken();
-      const userId = user?.id || "test-user";
+
+      // Confirmations used to go to one hardcoded address and phone number, so
+      // every customer's order details were sent to the same third party and
+      // the actual customer was never told anything. They go to whoever placed
+      // the order now.
+      const account = getCurrentUser();
+      const customerEmail = account?.email || user?.email || "";
+      const customerPhone = account?.phoneNumber || account?.phone || "";
 
       const orderNumber = Math.floor(100 + Math.random() * 900);
       const orderId = `ORD-${orderNumber}`;
@@ -57,14 +82,17 @@ const Order = () => {
       const orderPayload = {
         orderId,
         userId,
-        restaurantId: restaurantId || "test-restaurant",
+        restaurantId,
         products:
           cartItems?.map((item) => ({
-            productId: item.id || "test-product",
+            productId: item.id,
             quantity: item.quantity || 1,
             price: item.price || 0,
           })) || [],
-        deliveryAddress: deliveryAddress || "Test Address",
+        deliveryAddress: [dropoff.address, dropNote].filter(Boolean).join(" — "),
+        ...(dropoff.coordinates && {
+          deliveryLocation: { type: "Point", coordinates: dropoff.coordinates },
+        }),
         dropNote: dropNote || "",
         deliveryType: deliveryType || "standard",
         paymentMethod,
@@ -81,13 +109,13 @@ const Order = () => {
           await sendOrderConfirmation({
             orderId: orderId, // Use the ORD-123 format directly
             userId,
-            customerEmail: "dushanbolonghe@gmail.com",
-            customerPhone: "+94701615834",
+            customerEmail,
+            customerPhone,
             totalAmount: total,
             metadata: {
-              email: "dushanbolonghe@gmail.com",
+              email: customerEmail,
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834",
+              phone: customerPhone,
             },
           });
         } catch (notifError) {
@@ -117,8 +145,8 @@ const Order = () => {
             amount: total || 0,
             orderId,
             orderPayload,
-            userEmail: "dushanbolonghe@gmail.com",
-            userPhone: "+94701615834",
+            userEmail: customerEmail,
+            userPhone: customerPhone,
           },
           replace: true,
         });
@@ -133,22 +161,16 @@ const Order = () => {
 
   return (
     <UserLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 py-4 sm:py-8 lg:flex-row lg:gap-10">
         {/* Left side: delivery and payment options */}
         <div className="flex-1 space-y-8">
           <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-6">Delivery Details</h2>
-            <input
-              value={deliveryAddress}
-              readOnly
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-4 bg-gray-100 cursor-not-allowed"
-              placeholder="Enter delivery address"
-            />
-            <input
-              value={dropNote}
-              readOnly
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-100 cursor-not-allowed"
-              placeholder="Drop-off note (optional)"
+            <h2 className="mb-6 text-xl font-bold sm:text-2xl">Delivery Details</h2>
+            <LocationPicker
+              value={dropoff}
+              onChange={setDropoff}
+              addressNote={dropNote}
+              onAddressNoteChange={setDropNote}
             />
           </div>
 

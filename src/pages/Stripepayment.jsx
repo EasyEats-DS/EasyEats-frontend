@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import FoodieButton from '../components/FoodieButton';
 import { paymentService } from '../lib/api/payments';
+import { getCurrentUser } from '../lib/auth';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -33,6 +34,12 @@ const StripePayment = () => {
 
   const { amount, orderId } = location.state || {};
   const userId = localStorage.getItem('userId');
+  // The signed-in customer, so confirmations reach the person who paid rather
+  // than the single hardcoded address they used to be sent to.
+  const account = getCurrentUser();
+  const customerEmail = account?.email || "";
+  const customerPhone = account?.phoneNumber || account?.phone || "";
+
 
   useEffect(() => {
     console.log('StripePayment state:', location.state);
@@ -87,14 +94,14 @@ const StripePayment = () => {
           await paymentService.sendOrderConfirmation({
             orderId: `#${orderId.slice(0, 8)}`,
             userId,
-            customerEmail: "dushanbolonghe@gmail.com",
-            customerPhone: "+94701615834",
+            customerEmail,
+            customerPhone,
             totalAmount: amount,
             channel: 'BOTH',
             metadata: {
-              email: "dushanbolonghe@gmail.com",
+              email: customerEmail,
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834",
+              phone: customerPhone,
               channel: "BOTH",
               paymentId: result.paymentIntent.id,
               paymentStatus: "SUCCESS"

@@ -21,7 +21,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusDriver }, ref) => {
+const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, routePath = [], onFocusDriver }, ref) => {
   const [userPosition, setUserPos] = useState([6.1688, 80.1794]); // default: southern SL
   const [driverIcon, setDriverIcon] = useState(null);
   const [customerIcon, setCustomerIcon] = useState(null);
@@ -38,7 +38,6 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
     driverLocation,
     subscribeToTracking,
   } = useSocket();
-  const [routePath, setRoutePath] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const mapRef = useRef();
@@ -135,16 +134,6 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
           }
         }
 
-        if (selectedDelivery?.restaurantId?.position && selectedDelivery?.customerId?.position) {
-          const res = await axios.get(`http://localhost:3001/api/google/route`, {
-            params: {
-              origin: `${selectedDelivery.restaurantId.position.coordinates}`,
-              destination: `${selectedDelivery.customerId.position.coordinates}`
-            }
-          });
-          console.log("Route response________________________________:", res.data.route); // Log the route data
-          setRoutePath(res.data.route);
-        }
       } catch (err) {
         console.error("Error fetching data:", err);
       }
@@ -161,6 +150,11 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   }, [selectedDelivery, deliveries, subscribeToTracking]);
 
   const trackedDriverPosition = toLatLng(driverLocation?.coordinates);
+
+  // The chosen drop-off for the delivery being viewed, when there is one.
+  const dropoffPosition =
+    toLatLng([selectedDelivery?.dropoffLocation?.lng, selectedDelivery?.dropoffLocation?.lat]) ||
+    positionToLatLng(selectedDelivery?.customerId?.position);
 
   // Handle driver focus from parent
   // useEffect(() => {
@@ -223,8 +217,16 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
           />
         )}
 
+        {dropoffPosition && (
+          <CustomerMarker
+            position={dropoffPosition}
+            icon={customerIcon}
+            customer={selectedDelivery?.customerId}
+          />
+        )}
+
         {routePath.length > 0 && (
-          <Polyline positions={routePath} color="blue" weight={5} />
+          <Polyline positions={routePath} color="#2563eb" weight={5} opacity={0.8} />
         )}
 
         {!isConnected && (
