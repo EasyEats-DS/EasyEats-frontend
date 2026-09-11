@@ -32,9 +32,13 @@ const CUSTOMER_NAV = [
   { label: "Map", path: "/customer/map", icon: "map" },
 ];
 
+/**
+ * Profile is deliberately absent here, as it is from CUSTOMER_NAV: UserLayout
+ * renders its own Profile button in both the header and the bottom bar for
+ * every role, so listing it again shows it twice.
+ */
 const DRIVER_NAV = [
   { label: "Deliveries", path: "/driver/map", icon: "deliveries" },
-  { label: "Profile", path: "/profile", icon: "profile" },
 ];
 
 const NAV_BY_ROLE = {

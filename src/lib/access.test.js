@@ -52,6 +52,15 @@ describe("navItemsForRole", () => {
     expect(navItemsForRole("NOPE")).toEqual(navItemsForRole(ROLES.CUSTOMER));
   });
 
+  it("leaves Profile to the layout, which renders it for every role", () => {
+    // UserLayout appends its own Profile button to both the header and the
+    // bottom bar. A role that also lists Profile here gets it twice.
+    for (const role of Object.values(ROLES)) {
+      const paths = navItemsForRole(role).map((i) => i.path);
+      expect(paths).not.toContain("/profile");
+    }
+  });
+
   it("gives every item a label and a path", () => {
     for (const role of Object.values(ROLES)) {
       for (const item of navItemsForRole(role)) {
