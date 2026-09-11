@@ -1,134 +1,146 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { getCurrentUser, isDriver } from '../../../lib/auth';
 
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
-
+/**
+ * The one socket connection for the app, and the delivery state it carries.
+ *
+ * Two roles share it. A driver receives one offer at a time and answers it; a
+ * customer watches their order move from "finding a driver" to a live position
+ * on the map. Both are held here rather than in the pages so that an offer is
+ * not lost when the driver happens to be on a different screen.
+ */
 export default function useDriversSocket() {
   const [data, setData] = useState({
     drivers: [],
     availableDrivers: [],
-    restaurants: []
+    restaurants: [],
   });
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
-
   const [customerLocation, setCustomerLocation] = useState(null);
 
-  const socketRef = useRef(null); // Store socket globally
+  /** The offer this driver is being asked to answer right now, if any. */
+  const [offer, setOffer] = useState(null);
+  /** What this driver is currently delivering, once an offer is accepted. */
+  const [activeDelivery, setActiveDelivery] = useState(null);
+  /** Where the customer's order stands: searching, assigned, delivered... */
+  const [deliveryStatus, setDeliveryStatus] = useState(null);
+  /** The assigned driver's latest position, for the customer's map. */
+  const [driverLocation, setDriverLocation] = useState(null);
+  /**
+   * Whether the server accepted this connection's identity.
+   *
+   * null while the answer is outstanding. A driver whose token has expired
+   * connects and renders normally but is invisible to dispatch, so this has to
+   * be observable by the UI rather than only logged.
+   */
+  const [identified, setIdentified] = useState(null);
+  const [authError, setAuthError] = useState(null);
 
-  const loggedInDriver = getCurrentUser();
-  const userType = isDriver(loggedInDriver) ? 'driver' : 'customer';
+  const socketRef = useRef(null);
 
-// ✅ Send location with global socket ref
-  const sendLiveLocation = (location,user) => {
-    console.log("sendLiveLocation-:socket", socketRef.current);
-    if (socketRef.current) {
-      console.log("Sending live location:", location," user :", user);
-      socketRef.current.emit('live_location', { location,user });
-    }
-  };
+  const currentUser = getCurrentUser();
+  const currentUserId = currentUser?._id;
+  const userIsDriver = isDriver(currentUser);
 
-  const status_update = (orderId) => {
-    console.log("status_update-:socket", orderId);
-    if (socketRef.current) {
-      console.log("Sending status update:", orderId );
-      console.log("socketRef.current-:", socketRef.current);
-      try {
-        socketRef.current.emit('status_update', { orderId });
-      }
-      catch (error) {
-        console.error("Error sending status update:", error);
-      }
-      
-    }
-  };
-  
+  const emit = useCallback((event, payload) => {
+    if (!socketRef.current) return false;
+    socketRef.current.emit(event, payload);
+    return true;
+  }, []);
+
+  /**
+   * Reports this device's position.
+   *
+   * The server derives who is reporting from the connection's token, so the
+   * user argument older callers pass is accepted and ignored rather than
+   * trusted.
+   */
+  const sendLiveLocation = useCallback(
+    (location) => emit('live_location', { location }),
+    [emit],
+  );
+
+  const status_update = useCallback((delivery) => emit('status_update', { orderId: delivery }), [emit]);
+
+  const acceptOffer = useCallback(() => {
+    if (!offer) return;
+    emit('delivery:accept', {
+      assignmentId: offer.assignmentId,
+      offerToken: offer.offerToken,
+    });
+    // Cleared optimistically: the countdown should stop the instant they tap,
+    // and the server answers with delivery:offer_result either way.
+    setOffer(null);
+  }, [emit, offer]);
+
+  const rejectOffer = useCallback(() => {
+    if (!offer) return;
+    emit('delivery:reject', {
+      assignmentId: offer.assignmentId,
+      offerToken: offer.offerToken,
+    });
+    setOffer(null);
+  }, [emit, offer]);
+
+  /** Re-joins an order's tracking room, e.g. when opening the order page. */
+  const subscribeToTracking = useCallback((orderId) => emit('tracking:subscribe', { orderId }), [emit]);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
 
-
-    const getCityName = async (lat, lng) => {
-      try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-        );
-        const data = await response.json();
-        return data.address.city || data.address.town || data.address.village || 'Unknown location';
-      } catch (error) {
-        console.error('Failed to fetch city name:', error);
-        return 'Unknown location';
-      }
-    };
-
-
-    const socket = io(`http://localhost:3001`, {
+    const socket = io(SOCKET_URL, {
       transports: ['websocket'],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      // Identity comes from the signed token; the server no longer accepts a
+      // client-supplied id, since a socket can now claim a delivery.
+      auth: { token },
     });
 
-    socketRef.current = socket; // 💾 Store it in the ref
+    socketRef.current = socket;
 
-    // Connection events
     socket.on('connect', () => {
       setIsConnected(true);
-      console.log('Connected to WebSocket server');
-    
-      socket.emit('map:init');
-      socket.emit('identify', { role: userType, id: loggedInDriver?._id });
+      socket.emit('identify');
     });
 
     socket.on('disconnect', () => {
       setIsConnected(false);
-      console.log('Disconnected from WebSocket server');
+      setIdentified(null);
+    });
+    socket.on('error', (err) => setError(err));
+    socket.on('connect_error', (err) => setError(err));
+
+    socket.on('identify:result', (result) => {
+      setIdentified(Boolean(result?.ok));
+      setAuthError(result?.ok ? null : result?.reason || 'unauthenticated');
+
+      if (!result?.ok) {
+        console.warn('Socket identification refused:', result?.reason);
+      }
     });
 
-    
+    // ---- map data ----------------------------------------------------------
 
-    
-
-    // Data events with error handling
     socket.on('map:init', (response) => {
       try {
-       
-        console.log("Logged in driver-:", loggedInDriver);
-        if (!response) {
-          throw new Error('No data received');
-        }
-    
+        if (!response) throw new Error('No data received');
+
         const drivers = Array.isArray(response.availableDrivers) ? response.availableDrivers : [];
         const restaurants = Array.isArray(response.restaurants) ? response.restaurants : [];
-        console.log("Initial data:", response);
-        console.log("drivers-:", drivers);
-        console.log("restaurants-:", restaurants);
-        console.log("userType-:", userType);
 
-        let filteredDrivers;
-        if(userType === 'driver' && loggedInDriver){
-           filteredDrivers = loggedInDriver
-          ? drivers.filter(d => d._id !== loggedInDriver._id)
-          : drivers;   
-        }else{
-           filteredDrivers = drivers; 
-        }
+        const others = currentUserId ? drivers.filter((d) => d._id !== currentUserId) : drivers;
 
-        console.log("filteredDrivers-:", filteredDrivers);
-        const filterdDrivers = filteredDrivers.filter(d => d?.role === 'DELIVERY_PERSON');
-            console.log("filterdDrivers1111:", filterdDrivers);
         setData({
           drivers,
-          availableDrivers:filterdDrivers,//: filteredDrivers.filter(d => d?.status === 'available'),
-          restaurants
+          availableDrivers: others.filter((d) => d?.role === 'DELIVERY_PERSON'),
+          restaurants,
         });
-
-        console.log("drivers-N",data)
-
-
-        
       } catch (err) {
         console.error('Error processing initial data:', err);
         setError(err);
@@ -136,214 +148,120 @@ export default function useDriversSocket() {
     });
 
     socket.on('location_updated', ({ userId, role, location }) => {
-      console.log("Location updated111:", userId, role, location);
-      setData(prevData => {
-        let updatedDrivers = prevData.drivers;
-        let updatedRestaurants = prevData.restaurants;
-    
-        if (role === 'DELIVERY_PERSON') {
-          console.log("Location updated222:", userId, role, location);
-          updatedDrivers = prevData.drivers.map(driver => {
-            console.log("Location updated333:", driver._id, userId, role, location);
-            if (driver._id === userId) {
-              return {
-                ...driver,
-                position: {
-                  type: 'Point',
-                  coordinates: location
-                }
-              };
-            }
-            return driver;
-          });
-        }
-    
-        // If you want to handle customer location updates too:
-        if (role === 'customer') {
-          setCustomerLocation(location);
-        }
-        
-        const updatedfilteredDrivers = updatedDrivers.filter(driver => driver._id !== loggedInDriver._id);
-        const updatedDrivers1 = updatedfilteredDrivers.filter(driver => driver?.role === 'DELIVERY_PERSON');
+      if (role === 'CUSTOMER' || role === 'customer') {
+        setCustomerLocation(location);
+      }
+
+      setData((previous) => {
+        const drivers = previous.drivers.map((driver) =>
+          driver._id === userId
+            ? { ...driver, position: { type: 'Point', coordinates: location } }
+            : driver,
+        );
+
         return {
-          ...prevData,
-          drivers: updatedDrivers,
-          availableDrivers: updatedDrivers1,
-          restaurants: updatedRestaurants
+          ...previous,
+          drivers,
+          availableDrivers: drivers.filter(
+            (driver) => driver?.role === 'DELIVERY_PERSON' && driver._id !== currentUserId,
+          ),
         };
       });
     });
 
-    // socket.on('map:update', (response) => {
-    //   try {
-    //     if (!response) {
-    //       throw new Error('No data received');
-    //     }
+    // ---- driver: the offer loop -------------------------------------------
 
-    //     const drivers = Array.isArray(response.drivers) ? response.drivers : [];
-    //     setData(prev => ({
-    //       ...prev,
-    //       drivers,
-    //       availableDrivers: drivers.filter(d => d?.status === 'available')
-    //     }));
+    socket.on('delivery:offer', (incoming) => setOffer(incoming));
 
-    //   } catch (err) {
-    //     console.error('Error processing update:', err);
-    //     setError(err);
-    //   }
-    // });
-
-    socket.on('error', (err) => {
-      console.error('Socket error:', err);
-      setError(err);
+    // The countdown ran out, or the order was withdrawn. Close the popup
+    // silently; the driver did not do anything wrong.
+    socket.on('delivery:offer_cancelled', ({ assignmentId }) => {
+      setOffer((current) => (current?.assignmentId === assignmentId ? null : current));
     });
 
-    const driver = { ...loggedInDriver };
-    socket.on('new_order', async(order) => {
-      console.log("New order received:", order);
-      console.log("r_:", order.restaurant?.position.coordinates[0]);
-      console.log("c_", order.customer?.position.coordinates);
-      const pickupLat = order.restaurant?.position.coordinates[0];
-      const pickupLng = order.restaurant?.position.coordinates[1];
-      const dropoffLat = order.customer?.position.coordinates[0];
-      const dropoffLng = order.customer?.position.coordinates[1];
-      console.log("Pickup coordinates:", pickupLat, pickupLng);
-      console.log("Dropoff coordinates:", dropoffLat, dropoffLng);
+    socket.on('delivery:offer_result', (result) => {
+      setOffer((current) => (current?.assignmentId === result?.assignmentId ? null : current));
 
-      const pickupCity = await getCityName(pickupLat, pickupLng);
-      const dropoffCity = await getCityName(dropoffLat, dropoffLng);
-
-      console.log("Pickup city:", pickupCity);
-      console.log("Dropoff city:", dropoffCity);
-      console.log("111111111")
-      //alert("New delivery request from " + order.customer.fullName + " at " + order.restaurant.name);
-     
-      toast.info(
-        <div style={{
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          color: '#2c2c2c',
-          padding: '10px 5px',
-        }}>
-          <p style={{ margin: '0 0 6px 0', fontWeight: 600 }}>
-            New delivery request from <span style={{ color: '#00c569' }}>{order.customer.firstName +" "+order.customer.lastName }</span>
-          </p>
-          <p style={{ margin: '4px 0' }}> <strong>Pick-up:</strong> {order.restaurant.name}, {pickupCity}</p>
-          <p style={{ margin: '4px 0' }}> <strong>Drop-off:</strong> {dropoffCity}</p>
-      
-          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button
-              onClick={() => {
-                socket.emit('accept_order', { driver, order });
-                toast.dismiss();
-              }}
-              style={{
-                padding: '6px 14px',
-                backgroundColor: '#00c569',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '13px',
-              }}
-            >
-              Accept
-            </button>
-            <button
-              onClick={() => toast.dismiss()}
-              style={{
-                padding: '6px 14px',
-                backgroundColor: '#f5f5f5',
-                color: '#333',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '13px',
-              }}
-            >
-              Decline
-            </button>
-          </div>
-        </div>,
-        { autoClose: true } // 🔥 Maybe set autoClose: false to allow user interaction
-      );
+      if (result?.ok) {
+        setActiveDelivery(result);
+        if (result.customer?.position?.coordinates) {
+          setCustomerLocation(result.customer.position.coordinates);
+        }
+      } else {
+        setError(null);
+        console.info('Offer could not be claimed:', result?.reason);
+      }
     });
 
-    socket.on('order_assigned', ({ name, order }) => {
-      toast.success(
-        <div style={{
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          color: '#2c2c2c',
-          padding: '10px 5px',
-        }}>
-          🎉 Order Accepted!  
-          <p style={{ margin: '5px 0', fontWeight: 600 }}>
-            Driver <span style={{ color: '#00c569' }}>{name}</span> is on the way!
-          </p>
-        </div>,
-        { position: "top-right", autoClose: 4000, hideProgressBar: false }
-      );
+    // ---- customer: watching the search ------------------------------------
+
+    socket.on('delivery:searching', (payload) =>
+      setDeliveryStatus({ ...payload, state: 'searching' }),
+    );
+
+    socket.on('delivery:driver_rejected', (payload) =>
+      setDeliveryStatus({ ...payload, state: 'driver_rejected' }),
+    );
+
+    socket.on('delivery:assigned', (payload) => {
+      setDeliveryStatus({ ...payload, state: 'assigned' });
+      if (payload?.driver?.position?.coordinates) {
+        setDriverLocation({ coordinates: payload.driver.position.coordinates });
+      }
     });
 
-    socket.on('customer_location', ({ cus, coords }) => {
-      setCustomerLocation(coords);
-      console.log("Customer location:", cus, coords);
+    socket.on('delivery:search_failed', (payload) =>
+      setDeliveryStatus({ ...payload, state: 'failed' }),
+    );
+
+    socket.on('delivery:status', (payload) =>
+      setDeliveryStatus((current) => ({ ...current, ...payload, state: payload.status })),
+    );
+
+    // ---- tracking ----------------------------------------------------------
+
+    socket.on('delivery:driver_location', ({ coordinates, at, orderId, driverId }) => {
+      setDriverLocation({ coordinates, at, orderId, driverId });
     });
 
-    socket.on('order_status_updated',(orderId) =>{
-      console.log("Order status updated:", orderId.orderId.orderId);
-      const status = orderId.orderId.deliveryStatus;
-      toast.success(
-        <div style={{
-          fontFamily: 'Inter, sans-serif',
-          fontSize: '14px',
-          color: '#2c2c2c',
-          padding: '10px 5px',
-        }}>
-          🎉 Order Status Updated!  
-          <p style={{ margin: '5px 0', fontWeight: 600 }}>
-            Order Status Updated : <span style={{ color: '#00c569' }}>{status}</span> !
-          </p>
-        </div>,
-        { position: "top-right", autoClose: 4000, hideProgressBar: false }
-      );
-    })
+    // Sent on reconnect when this user is already party to a live order, so a
+    // refresh mid-delivery does not lose the tracking view.
+    socket.on('delivery:restored', (payload) => {
+      setDeliveryStatus({ ...payload, state: payload.state });
+      if (payload?.state === 'accepted' || payload?.state === 'picked_up') {
+        setActiveDelivery((current) => current ?? payload);
+      }
+    });
 
-  
-
-    // Request initial data after connection
-    // socket.on('connect', () => {
-    //   socket.emit('map:init');
-    //   socket.emit('identify', { role: userType, id: loggedInDriver?._id });
-
-    // });
-
-    // Cleanup
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('map:init');
-      socket.off('map:update');
-      socket.off('error');
-      socket.off('new_order');
-      socket.off('order_assigned');
-      socket.off('customer_location');
-      socket.off('identify');
-      socket.off('live_location');
-      socket.off('status_update')
-      socketRef.current = null; // Clear the ref
+      socket.removeAllListeners();
       socket.disconnect();
+      socketRef.current = null;
     };
-  }, []);
+  }, [currentUserId]);
 
-  return { 
+  return {
     ...data,
     isConnected,
+    identified,
+    authError,
+    error,
+
     customerLocation,
     setCustomerLocation,
+    driverLocation,
+
+    offer,
+    acceptOffer,
+    rejectOffer,
+    activeDelivery,
+
+    deliveryStatus,
+    subscribeToTracking,
+
     sendLiveLocation,
     status_update,
-    error
+
+    isDriver: userIsDriver,
   };
 }

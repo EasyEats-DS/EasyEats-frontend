@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isNotFound } from "./httpErrors";
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/orders`;
 
@@ -28,10 +29,17 @@ export const fetchAllOrdersNoPagination = async () => {
 
 // Fetch orders by user ID
 export const fetchOrdersByUserId = async (userId) => {
+  try {
     const response = await axios.get(`${API_URL}/user/${userId}`);
-    console.log("Full API Response (User Fetch):", response.data);
-    return response.data.orders; 
-  };
+    return response.data.orders ?? [];
+  } catch (error) {
+    // The service reports "no orders for this user" as a 404. Having never
+    // ordered is a normal state, so surface it as an empty list and let the
+    // page show its empty state instead of an error.
+    if (isNotFound(error)) return [];
+    throw error;
+  }
+};
 
 
 // Update a specific order's status

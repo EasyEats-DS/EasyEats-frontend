@@ -76,8 +76,9 @@ const DeliveryList = ({
   const getStatusBadge = (status) => {
     const statusClasses = {
       pending: 'badge-pending',
-      in_progress: 'badge-in-progress',
-      completed: 'badge-completed',
+      assigned: 'badge-pending',
+      picked_up: 'badge-in-progress',
+      delivered: 'badge-completed',
       cancelled: 'badge-cancelled'
     };
     return (
@@ -94,22 +95,22 @@ const DeliveryList = ({
           {delivery.deliveryStatus === 'assigned' && (
             <button 
               className="btn-start"
-              onClick={(e) => handleStatusUpdate(delivery._id, 'in_progress', e)}
+              onClick={(e) => handleStatusUpdate(delivery._id, 'picked_up', e)}
             >
               Start Delivery
             </button>
           )}
           
-          {delivery.deliveryStatus === 'in_progress' && (
+          {delivery.deliveryStatus === 'picked_up' && (
             <button 
               className="btn-complete"
-              onClick={(e) => handleStatusUpdate(delivery._id, 'completed', e)}
+              onClick={(e) => handleStatusUpdate(delivery._id, 'delivered', e)}
             >
               Complete
             </button>
           )}
 
-        {/* {delivery.deliveryStatus === 'completed' && (
+        {/* {delivery.deliveryStatus === 'delivered' && (
           <button 
             className="btn-remove"
             onClick={(e) => handleRemove(delivery._id, 'removed', e)}
@@ -132,7 +133,7 @@ const DeliveryList = ({
           {delivery.driverId ? 'Track Driver' : 'No Driver Assigned'}
         </button>
 
-        {delivery.deliveryStatus === 'completed' && (
+        {delivery.deliveryStatus === 'delivered' && (
           <button 
             className="btn-remove"
             onClick={(e) => handleRemove(delivery._id, 'removed', e)}

@@ -11,6 +11,7 @@ import axios from 'axios';
 
 import { useSocket } from './SocketContext';
 import { getCurrentUser } from '../../lib/auth';
+import { positionToLatLng, toLatLng } from '../../lib/geo';
 
 // Fix default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -27,7 +28,16 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   const [userMarker, setUserMarker] = useState(null);
   const [highlightedDriverId, setHighlightedDriverId] = useState(null);
   //const { drivers, isConnected, availableDrivers, restaurants, customerLocation, setCustomerLocation, sendLiveLocation } = useDriversSocket();
-  const { drivers, isConnected, availableDrivers, restaurants, customerLocation, setCustomerLocation, sendLiveLocation } = useSocket(); // Get the status_update function from the context
+  const {
+    isConnected,
+    availableDrivers,
+    restaurants,
+    customerLocation,
+    setCustomerLocation,
+    sendLiveLocation,
+    driverLocation,
+    subscribeToTracking,
+  } = useSocket();
   const [routePath, setRoutePath] = useState([]);
   const [deliveries, setDeliveries] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -45,9 +55,10 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
   useImperativeHandle(ref, () => ({
     flyToDriver: (driverId) => {
       const driver = availableDrivers.find(d => d._id === driverId);
-      if (driver && driver.position) {
+      const latLng = positionToLatLng(driver?.position);
+      if (latLng) {
         setHighlightedDriverId(driverId);
-        mapRef.current.flyTo([driver.position.coordinates[0], driver.position.coordinates[1]], 15);
+        mapRef.current.flyTo(latLng, 15);
       }
     }
   }));
@@ -142,6 +153,15 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
     fetchRoute();
   }, [userRole, selectedDelivery, setCustomerLocation]);
 
+  // Rejoin this order's tracking room whenever the watched delivery changes, so
+  // a page reload does not silently stop the live position updates.
+  useEffect(() => {
+    const orderId = selectedDelivery?.orderId ?? deliveries[0]?.orderId;
+    if (orderId) subscribeToTracking(orderId);
+  }, [selectedDelivery, deliveries, subscribeToTracking]);
+
+  const trackedDriverPosition = toLatLng(driverLocation?.coordinates);
+
   // Handle driver focus from parent
   // useEffect(() => {
   //   if (onFocusDriver) {
@@ -179,14 +199,29 @@ const Map = forwardRef(({ userRole, customDeliveries, selectedDelivery, onFocusD
         
         <RestaurantMarkers restaurants={restaurants} />
         
-        {deliveries.map((delivery, index) => (
-          <CustomerMarker 
-            key={index} 
-            position={delivery.customerId.position.coordinates || customerLocation} 
-            icon={customerIcon} 
-            customer={delivery.customerId}
+        {deliveries.map((delivery, index) => {
+          const position =
+            positionToLatLng(delivery.customerId?.position) || toLatLng(customerLocation);
+          if (!position) return null;
+
+          return (
+            <CustomerMarker
+              key={delivery._id ?? index}
+              position={position}
+              icon={customerIcon}
+              customer={delivery.customerId}
+            />
+          );
+        })}
+
+        {/* The assigned driver, streamed into this order's tracking room. Only
+            the customer waiting on this delivery receives these updates. */}
+        {trackedDriverPosition && (
+          <DriverMarkers
+            drivers={[{ _id: 'tracked-driver', firstName: 'Your driver', position: { coordinates: driverLocation.coordinates } }]}
+            driverIcon={driverIcon}
           />
-        ))}
+        )}
 
         {routePath.length > 0 && (
           <Polyline positions={routePath} color="blue" weight={5} />

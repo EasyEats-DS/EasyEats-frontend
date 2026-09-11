@@ -38,6 +38,9 @@ import { ToastContainer } from "react-toastify";
 
 // import AdminRestaurantCreation from "./pages/Admin/AdminRestaurantCreation";
 import { SocketProvider } from '../src/components/banuka/SocketContext.jsx' // Adjust the path as necessary
+import DeliveryOfferModal from './components/banuka/DeliveryOfferModal.jsx'
+import DeliveryStatusBanner from './components/banuka/DeliveryStatusBanner.jsx'
+import DriverAvailabilityBanner from './components/banuka/DriverAvailabilityBanner.jsx'
 
 
 //banuka
@@ -97,6 +100,12 @@ const App = () => {
           pauseOnHover
           theme="colored"
         />
+
+        {/* Mounted above the routes so a driver's offer and a customer's order
+            status follow them across pages instead of living on one screen. */}
+        <DeliveryOfferModal />
+        <DeliveryStatusBanner />
+        <DriverAvailabilityBanner />
 
         <Routes>
           {/* Public Routes */}
