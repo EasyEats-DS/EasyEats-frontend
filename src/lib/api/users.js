@@ -24,7 +24,37 @@ api.interceptors.request.use(
   }
 );
 
+/**
+ * Pulls the user array out of a gateway response.
+ *
+ * The gateway forwards the user-service reply verbatim, so the list arrives
+ * wrapped as { data: { success, data: { users } } }. Older shapes are still
+ * accepted so this keeps working if the envelope is ever flattened.
+ */
+export const extractUsers = (payload) => {
+  const candidates = [
+    payload,
+    payload?.users,
+    payload?.data,
+    payload?.data?.users,
+    payload?.data?.data,
+    payload?.data?.data?.users,
+  ];
+  return candidates.find(Array.isArray) ?? [];
+};
+
 export const userService = {
+  // Get every user (SuperAdmin dashboard totals)
+  getAllUsers: async () => {
+    try {
+      const response = await api.get('/users');
+      return extractUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+  },
+
   // Get user profile by ID
   getUserById: async (userId) => {
     try {

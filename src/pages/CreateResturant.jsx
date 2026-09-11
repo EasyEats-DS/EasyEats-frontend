@@ -3,11 +3,16 @@ import { Building, MapPin, Clock, Phone, Mail, Image, Globe, Plus, Trash } from 
 import { restaurantService } from '../lib/api/resturants';
 import { getUserFromToken } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
+import ImageUploadField from '../components/ImageUploadField';
+import { useImageUpload } from '../lib/useImageUpload';
 import axios from 'axios';
 
 
 const CreateResturant = () => {
     const navigate = useNavigate();
+    const { uploading: uploadingImage, upload: uploadImageFile } = useImageUpload({
+      successMessage: 'Cover image uploaded successfully!',
+    });
     const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -92,31 +97,6 @@ const CreateResturant = () => {
     }
   };
 
-  const uploadFile = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "EasyEats"); 
-    data.append("cloud_name", "denqj4zdy"); 
-  
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/denqj4zdy/image/upload`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-  
-      const { secure_url } = response.data;
-      console.log("Image uploaded successfully:", secure_url);
-      return secure_url;
-    } catch (error) {
-      console.error("Error uploading file to Cloudinary:", error.response?.data || error);
-      throw new Error("Failed to upload image");
-    }
-  };
 
   // const handleMenuItemChange = (e) => {
   //   const { name, value, type, checked } = e.target;
@@ -470,57 +450,16 @@ const handleSubmit = async (e) => {
 {/* Cover Image */}
 <div>
   <h2 className="text-xl font-semibold mb-4 text-foodie-charcoal">Restaurant Image</h2>
-  <div>
-    <label className="block text-sm font-medium mb-2">Cover Image URL</label>
-    <div className="relative w-full max-w-md">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={async (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            try {
-              const secure_url = await uploadFile(file);
-              setFormData((prev) => ({
-                ...prev,
-                ResturantCoverImageUrl: secure_url
-              }));
-            } catch (error) {
-              console.error("Image upload failed:", error);
-              setError("Failed to upload image");
-            }
-          }
-        }}
-        className="hidden"
-        id="file-upload"
-      />
-      <label
-        htmlFor="file-upload"
-        className="flex flex-col items-center justify-center w-full h-28 bg-foodie-gray-light rounded-xl border-2 border-dashed border-foodie-orange/50 hover:border-foodie-orange cursor-pointer transition-all duration-300"
-      >
-        <svg
-          className="w-12 h-12 text-foodie-orange/70 mb-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M3 15a4 4 0 004 4h10a4 4 0 004-4M21 15V9a6 6 0 00-6-6H9a6 6 0 00-6 6v6m6-6l3-3m0 0l3 3m-3-3v12"
-          ></path>
-        </svg>
-        <span className="text-foodie-charcoal/80 font-medium">
-          Click to upload an image
-        </span>
-        <span className="text-sm text-foodie-charcoal/50">
-          (PNG, JPG, or GIF)
-        </span>
-      </label>
-    </div>
-  </div>
+  <ImageUploadField
+    id="cover-image-upload"
+    label="Cover Image"
+    value={formData.ResturantCoverImageUrl}
+    uploading={uploadingImage}
+    onSelectFile={async (file) => {
+      const url = await uploadImageFile(file);
+      if (url) setFormData((prev) => ({ ...prev, ResturantCoverImageUrl: url }));
+    }}
+  />
 </div>
 
             {/* Menu Items */}
@@ -630,10 +569,10 @@ const handleSubmit = async (e) => {
           <div className="flex justify-end pt-6">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingImage}
               className="bg-orange-400 hover:bg-foodie-orange/90 text-white px-6 py-2 rounded-md transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating...' : 'Create Restaurant'}
+              {uploadingImage ? 'Uploading image...' : loading ? 'Creating...' : 'Create Restaurant'}
             </button>
           </div>
         </form>

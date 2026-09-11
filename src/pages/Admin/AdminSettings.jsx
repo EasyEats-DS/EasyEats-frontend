@@ -6,7 +6,7 @@ import FoodieButton from '../../components/FoodieButton';
 import FoodieInput from '../../components/FoodieInput';
 import { getUserFromToken } from '../../lib/auth';
 import { restaurantService } from '../../lib/api/resturants';
-import axios from 'axios';
+import { useImageUpload } from '../../lib/useImageUpload';
 import { ToastContainer, toast } from 'react-toastify';
 
 const AdminSettings = () => {
@@ -32,6 +32,9 @@ const AdminSettings = () => {
     estimatedDeliveryTime: '15-25',
   });
   const [loading, setLoading] = useState(true);
+  const { uploading: uploadingImage, upload: uploadImageFile } = useImageUpload({
+    successMessage: 'Cover image updated successfully!',
+  });
   const [error, setError] = useState(null);
 
   // Fetch restaurant details on component mount
@@ -82,57 +85,15 @@ const AdminSettings = () => {
     fetchRestaurantDetails();
   }, []);
 
-  const uploadFile = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "EasyEats"); 
-    data.append("cloud_name", "denqj4zdy"); 
-  
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/denqj4zdy/image/upload`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-  
-      const { secure_url } = response.data;
-      console.log("Image uploaded successfully:", secure_url);
-      return secure_url;
-    } catch (error) {
-      console.error("Error uploading file to Cloudinary:", error.response?.data || error);
-      throw new Error("Failed to upload image");
-    }
-  };
-
   const handleCoverImageChange = async (e) => {
-    try {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      // Show loading state
-      setLoading(true);
-      
-      // Upload the file to Cloudinary using the existing uploadFile function
-      const imageUrl = await uploadFile(file);
-      
-      // Update the state with the new image URL
-      setRestaurantInfo((prev) => ({
-        ...prev,
-        coverImage: imageUrl,
-      }));
-      
-      // Optional: Show success message
-      console.log('Cover image updated successfully');
-      toast.success('Cover image updated successfully!');
-    } catch (err) {
-      setError('Failed to upload image. Please try again.');
-      console.error('Error uploading cover image:', err);
-    } finally {
-      setLoading(false);
+    const file = e.target.files?.[0];
+    // Reset so the same file can be retried after a failure.
+    e.target.value = '';
+    if (!file) return;
+
+    const imageUrl = await uploadImageFile(file);
+    if (imageUrl) {
+      setRestaurantInfo((prev) => ({ ...prev, coverImage: imageUrl }));
     }
   };
 
@@ -395,34 +356,42 @@ const AdminSettings = () => {
                         </span>
                       </div>
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity">
-                      <label
-                        htmlFor="cover-upload"
-                        className="cursor-pointer px-3 py-2 bg-white rounded-lg flex items-center"
-                      >
-                        <Upload className="w-4 h-4 mr-1" />
-                        <span>
-                          {restaurantInfo.coverImage ? "Change" : "Upload"}
-                        </span>
-                      </label>
+                    <div
+                      aria-busy={uploadingImage}
+                      className={`absolute inset-0 flex items-center justify-center transition-opacity ${
+                        uploadingImage
+                          ? "bg-black/60 opacity-100 cursor-not-allowed"
+                          : "bg-black/50 opacity-0 hover:opacity-100"
+                      }`}
+                    >
+                      {uploadingImage ? (
+                        <div className="flex items-center px-3 py-2 bg-white rounded-lg">
+                          <div className="w-4 h-4 border-2 border-foodie-orange border-t-transparent rounded-full animate-spin mr-2"></div>
+                          <span>Uploading image...</span>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="cover-upload"
+                          className="cursor-pointer px-3 py-2 bg-white rounded-lg flex items-center"
+                        >
+                          <Upload className="w-4 h-4 mr-1" />
+                          <span>
+                            {restaurantInfo.coverImage ? "Change" : "Upload"}
+                          </span>
+                        </label>
+                      )}
                       <input
                         id="cover-upload"
                         type="file"
                         accept="image/*"
                         className="hidden"
+                        disabled={uploadingImage}
                         onChange={handleCoverImageChange}
                       />
                     </div>
                   </div>
                 </div>
-                {loading && (
-                  <div className="mt-2 flex items-center">
-                    <div className="w-4 h-4 border-2 border-foodie-orange border-t-transparent rounded-full animate-spin mr-2"></div>
-                    <span className="text-sm text-foodie-gray-dark">
-                      Uploading image...
-                    </span>
-                  </div>
-                )}
+
               </div>
             </div>
           </FoodieCard>
@@ -454,9 +423,9 @@ const AdminSettings = () => {
           <FoodieButton
             className="w-full"
             onClick={handleSaveSettings}
-            disabled={loading}
+            disabled={loading || uploadingImage}
           >
-            {loading ? "Saving..." : "Save Settings"}
+            {uploadingImage ? "Uploading image..." : loading ? "Saving..." : "Save Settings"}
           </FoodieButton>
         </div>
       </div>

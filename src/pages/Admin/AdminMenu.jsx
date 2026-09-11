@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { resolveMenuItem, toUiMenuItem } from '../../lib/menuItems';
+import ImageUploadField from '../../components/ImageUploadField';
+import { useImageUpload } from '../../lib/useImageUpload';
 import { 
   Plus, Edit, Trash, Search, X, Upload, ChevronDown, CheckCircle, AlertCircle 
 } from 'lucide-react';
@@ -8,7 +11,6 @@ import FoodieCard from '../../components/FoodieCard';
 import FoodieInput from '../../components/FoodieInput';
 import { getUserFromToken } from '../../lib/auth';
 import { restaurantService } from '../../lib/api/resturants';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 
 
@@ -36,6 +38,7 @@ const AdminMenu = () => {
   const [restaurantId, setRestaurantId] = useState(null);
   const [showEditItemModal, setShowEditItemModal] = useState(false);
   const  [refresh, setRefresh] = useState(false);
+  const { uploading: uploadingImage, upload: uploadImageFile } = useImageUpload();
   const [editItemData, setEditItemData] = useState({
     id: '',
     name: '',
@@ -124,37 +127,6 @@ const AdminMenu = () => {
 
   }, [setRefresh]);
 
-   // Function to upload file to Cloudinary
-   const uploadFile = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "EasyEats"); // Make sure this matches your Cloudinary upload preset
-    data.append("cloud_name", "denqj4zdy"); // Better to pass this directly
-  
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/denqj4zdy/image/upload`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-  
-      const { secure_url } = response.data;
-      toast.success("Image uploaded successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
-      console.log("Image uploaded successfully:", secure_url);
-      return secure_url;
-    } catch (error) {
-      console.error("Error uploading file to Cloudinary:", error.response?.data || error);
-      throw new Error("Failed to upload image");
-    }
-  };
 
   // Function to handle opening the edit modal with pre-filled data
   const handleEditItem = (categoryId, item) => {
@@ -192,9 +164,15 @@ const AdminMenu = () => {
         imageUrl: editItemData.image || 'https://source.unsplash.com/random/400x300/?food',
       };
 
-      const updatedItem = await restaurantService.updateMenuItem(restaurantId, editItemData.id, updatedMenuItem);
+      const response = await restaurantService.updateMenuItem(restaurantId, editItemData.id, updatedMenuItem);
 
-      // Update the state with the updated item
+      // Same shape handling as the add flow.
+      const resolved = resolveMenuItem(response, editItemData.id);
+      const updatedItem = toUiMenuItem(resolved) ?? {
+        ...toUiMenuItem(updatedMenuItem),
+        id: editItemData.id,
+      };
+
       setMenuCategories((prev) =>
         prev.map((category) => {
           if (category.id === parseInt(editItemData.categoryId)) {
@@ -202,14 +180,7 @@ const AdminMenu = () => {
               ...category,
               items: category.items.map((item) =>
                 item.id === editItemData.id
-                  ? {
-                      id: updatedItem._id,
-                      name: updatedItem.name,
-                      description: updatedItem.description,
-                      price: updatedItem.price,
-                      image: updatedItem.imageUrl || 'https://source.unsplash.com/random/400x300/?food',
-                      available: updatedItem.isAvailable,
-                    }
+                  ? { ...updatedItem, id: updatedItem.id || editItemData.id }
                   : item
               ),
             };
@@ -264,23 +235,19 @@ const AdminMenu = () => {
         imageUrl: newItemData.image || 'https://source.unsplash.com/random/400x300/?food',
       };
 
-      const createdItem = await restaurantService.addMenuItem(restaurantId, newMenuItem);
+      const response = await restaurantService.addMenuItem(restaurantId, newMenuItem);
+
+      // The service may return the created item or the whole restaurant
+      // document; resolveMenuItem handles both. Fall back to what we sent so
+      // the card never renders the restaurant's name and a $0.00 price.
+      const createdItem =
+        toUiMenuItem(resolveMenuItem(response)) ?? toUiMenuItem(newMenuItem);
 
       const updatedCategories = menuCategories.map((category) => {
         if (category.id === parseInt(newItemData.categoryId)) {
           return {
             ...category,
-            items: [
-              ...category.items,
-              {
-                id: createdItem._id,
-                name: createdItem.name,
-                description: createdItem.description,
-                price: createdItem.price,
-                image: createdItem.imageUrl || 'https://source.unsplash.com/random/400x300/?food',
-                available: createdItem.isAvailable,
-              }
-            ]
+            items: [...category.items, createdItem]
           };
         }
         return category;
@@ -623,56 +590,15 @@ const AdminMenu = () => {
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label className="block text-foodie-charcoal font-medium mb-2 text-normal">
-                  Upload Image
-                </label>
-                <div className="relative w-full max-w-md">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        try {
-                          const imageUrl = await uploadFile(file);
-                          setNewItemData({ ...newItemData, image: imageUrl });
-                        } catch (error) {
-                          console.error("Image upload failed:", error);
-                          // Handle error (show toast message, etc.)
-                        }
-                      }
-                    }}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="flex flex-col items-center justify-center w-full h-28 bg-foodie-gray-light rounded-xl border-2 border-dashed border-foodie-orange/50 hover:border-foodie-orange cursor-pointer transition-all duration-300"
-                  >
-                    <svg
-                      className="w-12 h-12 text-foodie-orange/70 mb-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 15a4 4 0 004 4h10a4 4 0 004-4M21 15V9a6 6 0 00-6-6H9a6 6 0 00-6 6v6m6-6l3-3m0 0l3 3m-3-3v12"
-                      ></path>
-                    </svg>
-                    <span className="text-foodie-charcoal/80 font-medium">
-                      Click to upload an image
-                    </span>
-                    <span className="text-sm text-foodie-charcoal/50">
-                      (PNG, JPG, or GIF)
-                    </span>
-                  </label>
-                </div>
-              </div>
+              <ImageUploadField
+                id="file-upload"
+                value={newItemData.image}
+                uploading={uploadingImage}
+                onSelectFile={async (file) => {
+                  const url = await uploadImageFile(file);
+                  if (url) setNewItemData((prev) => ({ ...prev, image: url }));
+                }}
+              />
 
               <div className="flex items-center">
                 <input
@@ -707,9 +633,9 @@ const AdminMenu = () => {
               <FoodieButton
                 className="flex-1"
                 onClick={handleAddItem}
-                disabled={loading}
+                disabled={loading || uploadingImage}
               >
-                {loading ? "Adding..." : "Add Item"}
+                {uploadingImage ? "Uploading image..." : loading ? "Adding..." : "Add Item"}
               </FoodieButton>
             </div>
           </div>
@@ -792,56 +718,15 @@ const AdminMenu = () => {
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label className="block text-foodie-charcoal font-medium mb-2 text-normal">
-                  Upload Image
-                </label>
-                <div className="relative w-full max-w-md">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        try {
-                          const imageUrl = await uploadFile(file);
-                          setEditItemData({ ...editItemData, image: imageUrl }); // Fix: Use editItemData
-                        } catch (error) {
-                          console.error("Image upload failed:", error);
-                          // Handle error (show toast message, etc.)
-                        }
-                      }
-                    }}
-                    className="hidden"
-                    id="file-upload-edit" // Unique ID to avoid conflicts
-                  />
-                  <label
-                    htmlFor="file-upload-edit"
-                    className="flex flex-col items-center justify-center w-full h-28 bg-foodie-gray-light rounded-xl border-2 border-dashed border-foodie-orange/50 hover:border-foodie-orange cursor-pointer transition-all duration-300"
-                  >
-                    <svg
-                      className="w-12 h-12 text-foodie-orange/70 mb-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 15a4 4 0 004 4h10a4 4 0 004-4M21 15V9a6 6 0 00-6-6H9a6 6 0 00-6 6v6m6-6l3-3m0 0l3 3m-3-3v12"
-                      ></path>
-                    </svg>
-                    <span className="text-foodie-charcoal/80 font-medium">
-                      Click to upload an image
-                    </span>
-                    <span className="text-sm text-foodie-charcoal/50">
-                      (PNG, JPG, or GIF)
-                    </span>
-                  </label>
-                </div>
-              </div>
+              <ImageUploadField
+                id="file-upload-edit"
+                value={editItemData.image}
+                uploading={uploadingImage}
+                onSelectFile={async (file) => {
+                  const url = await uploadImageFile(file);
+                  if (url) setEditItemData((prev) => ({ ...prev, image: url }));
+                }}
+              />
 
               <div className="flex items-center">
                 <input
@@ -876,9 +761,9 @@ const AdminMenu = () => {
               <FoodieButton
                 className="flex-1"
                 onClick={handleUpdateItem}
-                disabled={loading}
+                disabled={loading || uploadingImage}
               >
-                {loading ? "Updating..." : "Update Item"}
+                {uploadingImage ? "Uploading image..." : loading ? "Updating..." : "Update Item"}
               </FoodieButton>
             </div>
           </div>

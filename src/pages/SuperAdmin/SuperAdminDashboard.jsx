@@ -1,56 +1,111 @@
-import React from 'react';
-import { 
-  Card, CardContent, CardDescription, CardFooter, 
-  CardHeader, CardTitle 
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Card, CardContent, CardDescription, CardFooter,
+  CardHeader, CardTitle
 } from "../../components/ui/card";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow
 } from "../../components/ui/table";
 import { TrendingUp, TrendingDown, Users, Building } from 'lucide-react';
 import SuperAdminLayout from '../../components/SuperAdminLayout';
+import { fetchAllOrdersNoPagination } from '../../lib/api/orders';
+import { restaurantService } from '../../lib/api/resturants';
+import { userService } from '../../lib/api/users';
+import { ACTIVE_ORDER_STATUSES } from '../../lib/dashboardStats';
 
 const SuperAdminDashboard = () => {
-    // Mock data
-    const stats = [
-      { 
-        title: 'Total Restaurants', 
-        value: '245', 
-        change: '+12%', 
-        trending: 'up',
-        icon: Building
-      },
-      { 
-        title: 'Total Users', 
-        value: '15,243', 
-        change: '+18%', 
-        trending: 'up',
-        icon: Users
-      },
-      { 
-        title: 'Active Orders', 
-        value: '1,753', 
-        change: '+5%', 
-        trending: 'up',
-        icon: TrendingUp
-      },
-      { 
-        title: 'Cancelled Orders', 
-        value: '132', 
-        change: '-3%', 
-        trending: 'down',
-        icon: TrendingDown
-      },
-    ];
-  
-    const recentRestaurants = [
-      { id: 1, name: 'Bella Italia', location: 'New York', status: 'Active', orders: 142 },
-      { id: 2, name: 'Sushi Express', location: 'Los Angeles', status: 'Active', orders: 98 },
-      { id: 3, name: 'Taco Haven', location: 'Miami', status: 'Pending', orders: 0 },
-      { id: 4, name: 'Burger Palace', location: 'Chicago', status: 'Active', orders: 76 },
-      { id: 5, name: 'Pizza Planet', location: 'Houston', status: 'Active', orders: 112 },
-    ];
-  
+    const [restaurants, setRestaurants] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      let cancelled = false;
+
+      const load = async () => {
+        try {
+          const [allRestaurants, allOrders, allUsers] = await Promise.all([
+            restaurantService.getAllRestaurants(),
+            fetchAllOrdersNoPagination(),
+            userService.getAllUsers(),
+          ]);
+          if (cancelled) return;
+          setRestaurants(allRestaurants || []);
+          setOrders(allOrders || []);
+          setUsers(allUsers || []);
+        } catch (err) {
+          console.error('Failed to load platform stats:', err);
+          if (!cancelled) setError('Failed to load platform data.');
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      };
+
+      load();
+      return () => { cancelled = true; };
+    }, []);
+
+    const stats = useMemo(() => {
+      const activeOrders = orders.filter((o) =>
+        ACTIVE_ORDER_STATUSES.includes(String(o.status ?? '').toLowerCase())
+      ).length;
+      const cancelledOrders = orders.filter(
+        (o) => String(o.status ?? '').toLowerCase() === 'cancelled'
+      ).length;
+
+      return [
+        { title: 'Total Restaurants', value: restaurants.length, note: 'Registered on the platform', trending: 'up', icon: Building },
+        { title: 'Total Users', value: users.length, note: 'Registered accounts', trending: 'up', icon: Users },
+        { title: 'Active Orders', value: activeOrders, note: 'Pending, processing or shipped', trending: 'up', icon: TrendingUp },
+        { title: 'Cancelled Orders', value: cancelledOrders, note: 'All time', trending: 'down', icon: TrendingDown },
+      ];
+    }, [restaurants, orders, users]);
+
+    // Order counts per restaurant, so the table shows real volume.
+    const ordersByRestaurant = useMemo(() => {
+      const counts = {};
+      for (const order of orders) {
+        if (!order.restaurantId) continue;
+        counts[order.restaurantId] = (counts[order.restaurantId] || 0) + 1;
+      }
+      return counts;
+    }, [orders]);
+
+    const recentRestaurants = useMemo(
+      () =>
+        [...restaurants]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5)
+          .map((r) => ({
+            id: r._id,
+            name: r.name,
+            location: r.address?.city || r.address?.country || 'Unknown',
+            status: r.isActive === false ? 'Inactive' : 'Active',
+            orders: ordersByRestaurant[r._id] || 0,
+          })),
+      [restaurants, ordersByRestaurant]
+    );
+
+    if (loading) {
+      return (
+        <SuperAdminLayout title="SuperAdmin Dashboard">
+          <p style={{ color: '#6b7280' }}>Loading platform data...</p>
+        </SuperAdminLayout>
+      );
+    }
+
+    if (error) {
+      return (
+        <SuperAdminLayout title="SuperAdmin Dashboard">
+          <div style={{ backgroundColor: '#fef2f2', color: '#b91c1c', padding: '1rem', borderRadius: '0.5rem' }}>
+            {error}
+          </div>
+        </SuperAdminLayout>
+      );
+    }
+
     return (
       <SuperAdminLayout title="SuperAdmin Dashboard">
         {/* Stats Cards */}
@@ -65,24 +120,29 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stat.value}</div>
-                <p style={{ fontSize: '0.75rem', color: stat.trending === 'up' ? '#10b981' : '#ef4444' }}>
-                  {stat.change} from last month
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                  {stat.note}
                 </p>
               </CardContent>
             </Card>
           ))}
         </div>
-  
+
         {/* Recent Restaurants */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
           <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
             <CardHeader>
               <CardTitle>Recently Added Restaurants</CardTitle>
               <CardDescription>
-                Restaurants registered in the past 30 days
+                The most recently registered restaurants
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {recentRestaurants.length === 0 ? (
+                <p style={{ color: '#6b7280', fontSize: '0.875rem', padding: '1.5rem 0', textAlign: 'center' }}>
+                  No restaurants registered yet.
+                </p>
+              ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -98,13 +158,13 @@ const SuperAdminDashboard = () => {
                       <TableCell style={{ fontWeight: '500' }}>{restaurant.name}</TableCell>
                       <TableCell>{restaurant.location}</TableCell>
                       <TableCell>
-                        <span 
-                          style={{ 
-                            padding: '0.25rem 0.5rem', 
-                            borderRadius: '9999px', 
+                        <span
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '9999px',
                             fontSize: '0.75rem',
                             backgroundColor: restaurant.status === 'Active' ? '#dcfce7' : '#fef9c3',
-                            color: restaurant.status === 'Active' ? '#166534' : '#854d0e' 
+                            color: restaurant.status === 'Active' ? '#166534' : '#854d0e'
                           }}
                         >
                           {restaurant.status}
@@ -115,6 +175,7 @@ const SuperAdminDashboard = () => {
                   ))}
                 </TableBody>
               </Table>
+              )}
             </CardContent>
             <CardFooter style={{ borderTop: '1px solid #e5e7eb', padding: '1rem 1.5rem' }}>
               <button style={{ fontSize: '0.875rem', color: '#9333ea', fontWeight: '500', ':hover': { color: '#7e22ce' } }}>
@@ -123,7 +184,7 @@ const SuperAdminDashboard = () => {
             </CardFooter>
           </Card>
         </div>
-  
+
         {/* Other Dashboard Widgets */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(2, 1fr)' } }}>
           {/* System Health */}
@@ -147,7 +208,7 @@ const SuperAdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
-  
+
           {/* Quick Actions */}
           <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
             <CardHeader>
@@ -159,22 +220,22 @@ const SuperAdminDashboard = () => {
             <CardContent>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
                 {[
-                  'Add Restaurant', 
-                  'Manage Users', 
-                  'View Reports', 
+                  'Add Restaurant',
+                  'Manage Users',
+                  'View Reports',
                   'System Settings',
                   'Security Audit',
                   'Database Backup'
                 ].map((action) => (
-                  <button 
-                    key={action} 
-                    style={{ 
-                      padding: '0.75rem 1rem', 
-                      backgroundColor: '#f3f4f6', 
+                  <button
+                    key={action}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#f3f4f6',
                       ':hover': { backgroundColor: '#e5e7eb' },
-                      borderRadius: '0.5rem', 
-                      fontSize: '0.875rem', 
-                      fontWeight: '500', 
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
                       transition: 'background-color 150ms'
                     }}
                   >
@@ -188,6 +249,5 @@ const SuperAdminDashboard = () => {
       </SuperAdminLayout>
     );
   };
-  
+
   export default SuperAdminDashboard;
-  
