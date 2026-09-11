@@ -219,3 +219,49 @@
       margin-bottom: 5px;
     }
   }
+/*
+ * Narrow-panel hardening.
+ *
+ * This list is a 384px sidebar on desktop but the full width of a phone, and
+ * its rows carry unbroken values -- Mongo ids, addresses, emails -- that have
+ * no space to wrap at. Without these the longest value decides the panel's
+ * width and pushes the page into sideways scrolling.
+ */
+.delivery-list {
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+
+.delivery-header {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-row {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.info-label {
+  flex-shrink: 0;
+}
+
+.delivery-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Comfortable tap targets on touch screens. */
+.btn-details,
+.btn-start,
+.btn-complete,
+.btn-contact,
+.btn-remove {
+  min-height: 40px;
+}
+
+@media (min-width: 640px) {
+  .delivery-list {
+    padding: 15px;
+  }
+}

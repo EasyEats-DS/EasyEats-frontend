@@ -35,8 +35,8 @@ function ViewOrders() {
 
   return (
     <UserLayout>
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-extrabold mb-8 text-gray-800">My Orders</h1>
+      <div className="mx-auto max-w-5xl py-4 sm:py-8">
+        <h1 className="mb-6 text-2xl font-extrabold text-gray-800 sm:mb-8 sm:text-3xl">My Orders</h1>
 
         {loading ? (
           <div className="flex justify-center items-center min-h-[200px]">

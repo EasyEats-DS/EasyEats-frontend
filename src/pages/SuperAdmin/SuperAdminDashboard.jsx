@@ -109,7 +109,7 @@ const SuperAdminDashboard = () => {
     return (
       <SuperAdminLayout title="SuperAdmin Dashboard">
         {/* Stats Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1.5rem', '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(2, 1fr)' }, '@media (min-width: 1024px)': { gridTemplateColumns: 'repeat(4, 1fr)' } }}>
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
             <Card key={i} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', ':hover': { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }, transition: 'box-shadow 150ms' }}>
               <CardHeader style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.5rem' }}>
@@ -129,7 +129,7 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Recent Restaurants */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div className="mb-6 grid grid-cols-1 gap-6">
           <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
             <CardHeader>
               <CardTitle>Recently Added Restaurants</CardTitle>
@@ -155,9 +155,9 @@ const SuperAdminDashboard = () => {
                 <TableBody>
                   {recentRestaurants.map((restaurant) => (
                     <TableRow key={restaurant.id}>
-                      <TableCell style={{ fontWeight: '500' }}>{restaurant.name}</TableCell>
-                      <TableCell>{restaurant.location}</TableCell>
-                      <TableCell>
+                      <TableCell label="Restaurant" style={{ fontWeight: '500' }}>{restaurant.name}</TableCell>
+                      <TableCell label="Location">{restaurant.location}</TableCell>
+                      <TableCell label="Status">
                         <span
                           style={{
                             padding: '0.25rem 0.5rem',
@@ -170,7 +170,7 @@ const SuperAdminDashboard = () => {
                           {restaurant.status}
                         </span>
                       </TableCell>
-                      <TableCell style={{ textAlign: 'right' }}>{restaurant.orders}</TableCell>
+                      <TableCell label="Total Orders" style={{ textAlign: 'right' }}>{restaurant.orders}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -186,7 +186,7 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Other Dashboard Widgets */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', '@media (min-width: 768px)': { gridTemplateColumns: 'repeat(2, 1fr)' } }}>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* System Health */}
           <Card style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
             <CardHeader>
@@ -218,7 +218,7 @@ const SuperAdminDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
                   'Add Restaurant',
                   'Manage Users',

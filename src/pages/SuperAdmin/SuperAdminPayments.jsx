@@ -181,14 +181,14 @@ const SuperAdminPayments = () => {
             <TableBody>
               {filteredPayments.map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell className="font-medium">{payment.id}</TableCell>
-                  <TableCell>{payment.orderId}</TableCell>
-                  <TableCell>{payment.customer}</TableCell>
-                  <TableCell>{payment.restaurant}</TableCell>
-                  <TableCell>{payment.amount}</TableCell>
-                  <TableCell>{payment.method}</TableCell>
-                  <TableCell>{payment.date}</TableCell>
-                  <TableCell>
+                  <TableCell label="Payment ID" className="font-medium">{payment.id}</TableCell>
+                  <TableCell label="Order ID">{payment.orderId}</TableCell>
+                  <TableCell label="Customer">{payment.customer}</TableCell>
+                  <TableCell label="Restaurant">{payment.restaurant}</TableCell>
+                  <TableCell label="Amount">{payment.amount}</TableCell>
+                  <TableCell label="Method">{payment.method}</TableCell>
+                  <TableCell label="Date">{payment.date}</TableCell>
+                  <TableCell label="Status">
                     <span 
                       className={`px-2 py-1 rounded-full text-xs ${
                         payment.status === 'Successful' 

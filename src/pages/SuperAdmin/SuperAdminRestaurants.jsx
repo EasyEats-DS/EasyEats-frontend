@@ -61,13 +61,13 @@ const SuperAdminRestaurants = () => {
     <SuperAdminLayout title="Manage Restaurants">
       <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)', padding: '1.5rem' }}>
         {/* Actions Bar */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem', '@media (min-width: 640px)': { flexDirection: 'row' } }}>
-          <div style={{ position: 'relative', width: '100%', '@media (min-width: 640px)': { width: 'auto' } }}>
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="relative w-full sm:w-auto">
             <Search style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', height: '1rem', width: '1rem' }} />
             <input
               type="text"
               placeholder="Search restaurants..."
-              style={{ paddingLeft: '2.5rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', width: '100%', '@media (min-width: 640px)': { width: '20rem' } }}
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 sm:w-80"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -104,10 +104,10 @@ const SuperAdminRestaurants = () => {
               <TableBody>
                 {filteredRestaurants.map((restaurant) => (
                   <TableRow key={restaurant.id}>
-                    <TableCell style={{ fontWeight: '500' }}>{restaurant.name}</TableCell>
-                    <TableCell>{restaurant.owner}</TableCell>
-                    <TableCell>{restaurant.location}</TableCell>
-                    <TableCell>
+                    <TableCell label="Restaurant" style={{ fontWeight: '500' }}>{restaurant.name}</TableCell>
+                    <TableCell label="Owner">{restaurant.owner}</TableCell>
+                    <TableCell label="Location">{restaurant.location}</TableCell>
+                    <TableCell label="Status">
                       <span 
                         style={{ 
                           padding: '0.25rem 0.5rem', 
@@ -128,8 +128,8 @@ const SuperAdminRestaurants = () => {
                         {restaurant.status}
                       </span>
                     </TableCell>
-                    <TableCell>{restaurant.created}</TableCell>
-                    <TableCell>{restaurant.revenue}</TableCell>
+                    <TableCell label="Created Date">{restaurant.created}</TableCell>
+                    <TableCell label="Total Revenue">{restaurant.revenue}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

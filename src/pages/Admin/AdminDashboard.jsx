@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Users, ShoppingBag, ArrowUpRight, ArrowDownRight, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout";
+import ResponsiveTable from "../../components/ResponsiveTable";
 import FoodieCard from "../../components/FoodieCard";
 import { toast } from "react-toastify";
 import { computeStats, computeWeeklySeries } from "../../lib/dashboardStats";
@@ -234,63 +235,70 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {recentOrders.length === 0 ? (
-            <p className="text-gray-500 text-sm py-6 text-center">
-              No orders yet - once customers start ordering they will appear here.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left border-b border-foodie-gray">
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Order ID</th>
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Customer</th>
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Items</th>
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Status</th>
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Total</th>
-                    <th className="pb-3 font-medium text-foodie-gray-dark">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => {
-                    const itemCount = (order.products || []).length;
-                    return (
-                      <tr key={order._id} className="border-b border-foodie-gray hover:bg-foodie-gray-light">
-                        <td className="py-4 font-medium">#{String(order._id).slice(-6).toUpperCase()}</td>
-                        <td className="py-4">{customerName(customers, order.userId)}</td>
-                        <td className="py-4 text-sm text-gray-600">
-                          {itemCount} {itemCount === 1 ? "item" : "items"}
-                        </td>
-                        <td className="py-4">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              {order.status}
-                            </span>
-                            {["pending", "processing"].includes(order.status) && (
-                              <button
-                                onClick={() => handleNotifyCustomer(order)}
-                                disabled={notifying === order._id}
-                                className="flex items-center gap-1 bg-[#FF7A00] text-white text-xs px-2 py-1 rounded-full disabled:opacity-50"
-                              >
-                                <Bell className="w-3 h-3" />
-                                {notifying === order._id ? "Sending..." : "Notify Customer"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4">{currency(order.totalAmount)}</td>
-                        <td className="py-4 text-sm text-gray-600">{formatDate(order.createdAt)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <ResponsiveTable
+            rows={recentOrders}
+            rowKey={(order) => order._id}
+            empty="No orders yet - once customers start ordering they will appear here."
+            columns={[
+              {
+                key: "id",
+                header: "Order ID",
+                primary: true,
+                className: "font-medium",
+                cell: (order) => `#${String(order._id).slice(-6).toUpperCase()}`,
+              },
+              {
+                key: "customer",
+                header: "Customer",
+                cell: (order) => customerName(customers, order.userId),
+              },
+              {
+                key: "items",
+                header: "Items",
+                className: "text-sm text-gray-600",
+                cell: (order) => {
+                  const itemCount = (order.products || []).length;
+                  return `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+                },
+              },
+              {
+                key: "status",
+                header: "Status",
+                cell: (order) => (
+                  <div className="flex flex-wrap items-center justify-end gap-2 md:justify-start">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs ${
+                        STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                    {["pending", "processing"].includes(order.status) && (
+                      <button
+                        onClick={() => handleNotifyCustomer(order)}
+                        disabled={notifying === order._id}
+                        className="flex items-center gap-1 rounded-full bg-[#FF7A00] px-2 py-1 text-xs text-white disabled:opacity-50"
+                      >
+                        <Bell className="h-3 w-3" />
+                        {notifying === order._id ? "Sending..." : "Notify Customer"}
+                      </button>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: "total",
+                header: "Total",
+                cell: (order) => currency(order.totalAmount),
+              },
+              {
+                key: "date",
+                header: "Date",
+                className: "text-sm text-gray-600",
+                cell: (order) => formatDate(order.createdAt),
+              },
+            ]}
+          />
         </FoodieCard>
       </div>
     </AdminLayout>

@@ -146,13 +146,13 @@ const SuperAdminOrders = () => {
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>{order.restaurant}</TableCell>
-                  <TableCell>{order.items}</TableCell>
-                  <TableCell>{order.total}</TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
+                  <TableCell label="Order ID" className="font-medium">{order.id}</TableCell>
+                  <TableCell label="Customer">{order.customer}</TableCell>
+                  <TableCell label="Restaurant">{order.restaurant}</TableCell>
+                  <TableCell label="Items">{order.items}</TableCell>
+                  <TableCell label="Total">{order.total}</TableCell>
+                  <TableCell label="Date & Time">{order.date}</TableCell>
+                  <TableCell label="Status">
                     <span 
                       className={`px-2 py-1 rounded-full text-xs ${
                         order.status === 'Completed' 

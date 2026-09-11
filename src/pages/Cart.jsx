@@ -64,7 +64,7 @@ const Cart = () => {
   };
 
   return (
-    <div className="px-4 py-6 space-y-6 h-[calc(100vh-60px)] overflow-y-auto">
+    <div className="space-y-6 px-4 py-6">
       {/* Restaurant Info */}
       <div className="flex items-center mb-6">
         <h1 className="text-lg font-bold text-gray-900">Your Cart</h1>

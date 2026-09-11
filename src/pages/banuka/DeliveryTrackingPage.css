@@ -1,105 +1,107 @@
 /* src/pages/DeliveryTrackingPage.css */
-.body{
-  margin:0;
-}
+
+/*
+ * Map beside a delivery list on desktop, stacked on a phone.
+ *
+ * Both panels used to be `position: fixed` at every width, and the mobile
+ * media query only relaxed their size -- so on a phone the 400px list stayed
+ * pinned to the right edge, sitting on top of the map instead of below it.
+ * They are laid out with flex now, and only the wide layout pins anything.
+ */
+
 .delivery-tracking-container {
-  margin:0;
-    display: flex;
-    height: calc(100vh - 60px);
-    width: 100%;
-    position: relative;  /* Add this */
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: calc(100vh - 60px);
 }
-  
+
 .map-container {
-    flex: 2;
-    height: 100%;
-    position: fixed;    /* Change to fixed position */
-    left: 10px;           /* Add this */
-    top: 60px;         /* Adjust based on your header height */
-    width: calc(100% - 400px); /* Approximately 2/3 of the space minus delivery list width */
-    overflow: hidden;  /* Change from overflow-y to overflow */
+  width: 100%;
+  height: 55vh;
+  min-height: 260px;
+  overflow: hidden;
 }
-  
-.py-6 {
-  padding-block: 0;
+
+/* The map fills its panel rather than the 100vh it asks for on its own. */
+.map-container > div,
+.map-container .leaflet-container {
+  height: 100% !important;
+  width: 100%;
 }
+
 .delivery-list-container {
-  height: 85vh;
-  position: fixed;     /* ✅ Fix: make it fixed to align to viewport */
-  top: 60px;           /* ✅ Add this to align with your header */
-  max-width: 400px;
-  width: 400px;        /* ✅ Explicitly set width for better control */
+  width: 100%;
   overflow-y: auto;
-  padding: 0px;
+  padding: 0;
   background: #f8f9fa;
-  border-left: 1px solid #e0e0e0;
-  right: 0px;
+  border-top: 1px solid #e0e0e0;
+  /* Clears the fixed mobile tab bar. */
+  padding-bottom: 6rem;
 }
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
-  
-  .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border-left-color: #09f;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    color: #dc3545;
-  }
-  
-  .error-container button {
-    margin-top: 15px;
-    padding: 8px 16px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .error-container button:hover {
-    background-color: #c82333;
-  }
-  
-  @media (max-width: 768px) {
 
-    .map-container {
-      position: relative;
-      width: 100%;
-      height: 60vh;
-      top: 0;
+@media (min-width: 1024px) {
+  .delivery-tracking-container {
+    flex-direction: row;
+    height: calc(100vh - 60px);
   }
 
-    .delivery-tracking-container {
-      flex-direction: column;
-    }
-    
-    .map-container {
-      height: 60vh;
-    }
-    
-    .delivery-list-container {
-      max-width: 100%;
-      height: 40vh;
-    }
+  .map-container {
+    flex: 1 1 auto;
+    height: 100%;
   }
+
+  .delivery-list-container {
+    flex: 0 0 24rem;
+    max-width: 24rem;
+    height: 100%;
+    border-top: none;
+    border-left: 1px solid #e0e0e0;
+    padding-bottom: 0;
+  }
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 1rem;
+  text-align: center;
+}
+
+.error-container {
+  color: #dc3545;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #09f;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container button {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error-container button:hover {
+  background-color: #c82333;
+}

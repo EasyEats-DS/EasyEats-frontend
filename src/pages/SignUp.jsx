@@ -119,7 +119,7 @@ const Signup = () => {
 
         <form className="mt-8 space-y-6" onSubmit={handleSignup}>
           <div className="bg-white p-6 rounded-2xl shadow-lg space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FoodieInput
                 label="First Name"
                 name="firstName"
@@ -230,7 +230,7 @@ const Signup = () => {
                 onChange={handleChange}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FoodieInput
                   label="City"
                   name="address.city"
@@ -254,7 +254,7 @@ const Signup = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FoodieInput
                   label="Zip Code"
                   name="address.zipCode"

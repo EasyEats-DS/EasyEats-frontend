@@ -155,9 +155,9 @@ const SuperAdminUsers = () => {
             <TableBody>
               {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
+                  <TableCell label="Name" className="font-medium">{user.name}</TableCell>
+                  <TableCell label="Email">{user.email}</TableCell>
+                  <TableCell label="Role">
                     <span 
                       className={`px-2 py-1 rounded-full text-xs ${
                         user.role === 'Super Admin'
@@ -172,7 +172,7 @@ const SuperAdminUsers = () => {
                       {user.role}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell label="Status">
                     <span 
                       className={`px-2 py-1 rounded-full text-xs ${
                         user.status === 'Active' 
@@ -183,8 +183,8 @@ const SuperAdminUsers = () => {
                       {user.status}
                     </span>
                   </TableCell>
-                  <TableCell>{user.joinDate}</TableCell>
-                  <TableCell>{user.orders}</TableCell>
+                  <TableCell label="Join Date">{user.joinDate}</TableCell>
+                  <TableCell label="Orders">{user.orders}</TableCell>
                   {/* <TableCell className="text-right">
                     <Button 
                       variant="ghost" 

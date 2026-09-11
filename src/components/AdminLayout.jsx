@@ -117,7 +117,10 @@ const AdminLayout = ({ children, title }) => {
         </nav>
         
         <div className="p-4 border-t border-foodie-gray">
-          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors">
+          <button
+            className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors"
+            onClick={handleLogout}
+          >
             <LogOut className="w-5 h-5 mr-3" />
             <span>Logout</span>
           </button>
@@ -127,7 +130,7 @@ const AdminLayout = ({ children, title }) => {
       {/* Main content */}
       <div className="flex-1 md:ml-64 flex flex-col">
         <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="px-4 py-4 flex justify-between items-center">
+          <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-3 sm:py-4">
             <div className="flex items-center">
               <button 
                 onClick={() => setSidebarOpen(true)} 
@@ -135,7 +138,7 @@ const AdminLayout = ({ children, title }) => {
               >
                 <MenuIcon className="w-6 h-6" />
               </button>
-              <h1 className="text-xl font-medium text-foodie-charcoal">{title}</h1>
+              <h1 className="truncate text-lg font-medium text-foodie-charcoal sm:text-xl">{title}</h1>
             </div>
             <div className="flex items-center gap-2">
               <button className="p-2 rounded-full hover:bg-foodie-gray-light">
@@ -149,7 +152,7 @@ const AdminLayout = ({ children, title }) => {
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>
