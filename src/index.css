@@ -1,2 +1,69 @@
 @import "tailwindcss";
 
+@theme {
+  --color-foodie-orange: #FF7A00;
+  --color-foodie-orange-dark: #E06900;
+  --color-foodie-orange-light: #FF9E00;
+  --color-foodie-charcoal: #1F2937;
+  --color-foodie-gray: #E5E7EB;
+  --color-foodie-gray-light: #F9FAFB;
+  --color-foodie-gray-dark: #6B7280;
+  --color-foodie-red: #EF4444;
+  --color-foodie-green: #10B981;
+}
+
+@layer base {
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    cursor: pointer;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, filter 0.2s ease-in-out, transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  /* Global hover effect for buttons so their appearance visibly responds to hover */
+  button:not(:disabled):hover,
+  [role="button"]:not([aria-disabled="true"]):hover,
+  input[type="button"]:not(:disabled):hover,
+  input[type="submit"]:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+
+  /* Active press feedback */
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  input[type="button"]:not(:disabled):active,
+  input[type="submit"]:not(:disabled):active {
+    filter: brightness(0.96);
+    transform: scale(0.98);
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  [role="button"]:disabled,
+  input[type="button"]:disabled,
+  input[type="submit"]:disabled,
+  input[type="reset"]:disabled {
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+  }
+
+  /* Menu items and navigation links text color changes on hover */
+  header button:hover,
+  header a:hover,
+  nav button:hover,
+  nav a:hover,
+  aside button:hover,
+  aside a:hover {
+    color: var(--color-foodie-orange);
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9E00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+

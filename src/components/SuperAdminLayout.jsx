@@ -48,19 +48,19 @@ const SuperAdminLayout = ({ children, title }) => {
             <button
               key={index}
               onClick={() => navigate(item.path)}
-              className="flex items-center px-6 py-3 w-full text-left hover:bg-gray-100 transition-colors"
+              className="flex items-center px-6 py-3 w-full text-left text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all group"
             >
-              <item.icon className="w-5 h-5 mr-3 text-purple-600" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 mr-3 text-purple-600 group-hover:scale-110 transition-transform" />
+              <span className="font-medium group-hover:text-purple-600 transition-colors">{item.label}</span>
             </button>
           ))}
         </nav>
         
         <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center px-6 py-3 w-full text-left text-red-600 hover:bg-gray-100 transition-colors" onClick={handleLogout}
+          <button className="flex items-center px-6 py-3 w-full text-left text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors" onClick={handleLogout}
           >
             <LogOut className="w-5 h-5 mr-3" />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
@@ -80,7 +80,7 @@ const SuperAdminLayout = ({ children, title }) => {
       >
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600 flex justify-between items-center">
           <h1 className="text-xl font-bold text-white">FoodieVibe SuperAdmin</h1>
-          <button onClick={() => setSidebarOpen(false)}>
+          <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-md hover:bg-white/20 transition-colors">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -93,18 +93,18 @@ const SuperAdminLayout = ({ children, title }) => {
                 navigate(item.path);
                 setSidebarOpen(false);
               }}
-              className="flex items-center px-6 py-3 w-full text-left hover:bg-gray-100 transition-colors"
+              className="flex items-center px-6 py-3 w-full text-left text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all group"
             >
-              <item.icon className="w-5 h-5 mr-3 text-purple-600" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 mr-3 text-purple-600 group-hover:scale-110 transition-transform" />
+              <span className="font-medium group-hover:text-purple-600 transition-colors">{item.label}</span>
             </button>
           ))}
         </nav>
         
         <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center px-6 py-3 w-full text-left text-red-600 hover:bg-gray-100 transition-colors">
+          <button className="flex items-center px-6 py-3 w-full text-left text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors" onClick={handleLogout}>
             <LogOut className="w-5 h-5 mr-3" />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
@@ -116,15 +116,15 @@ const SuperAdminLayout = ({ children, title }) => {
             <div className="flex items-center">
               <button 
                 onClick={() => setSidebarOpen(true)} 
-                className="md:hidden p-2 mr-2 rounded-md text-gray-700 hover:bg-gray-100"
+                className="md:hidden p-2 mr-2 rounded-md text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-colors"
               >
                 <LayoutDashboard className="w-6 h-6" />
               </button>
               <h1 className="text-xl font-medium text-gray-800">{title}</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full hover:bg-gray-100">
-                <UserCog className="w-6 h-6 text-gray-700" />
+              <button className="p-2 rounded-full hover:bg-purple-50 hover:text-purple-600 transition-colors">
+                <UserCog className="w-6 h-6 text-gray-700 hover:text-purple-600 transition-colors" />
               </button>
               <div className="hidden md:block">
                 <p className="text-sm font-medium">Super Admin</p>

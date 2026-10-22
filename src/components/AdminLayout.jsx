@@ -68,18 +68,18 @@ const AdminLayout = ({ children, title }) => {
             <button
               key={index}
               onClick={() => navigate(item.path)}
-              className="flex items-center px-6 py-3 w-full text-left hover:bg-foodie-gray-light transition-colors"
+              className="flex items-center px-6 py-3 w-full text-left text-gray-700 hover:text-foodie-orange hover:bg-orange-50 transition-all group"
             >
-              <item.icon className="w-5 h-5 mr-3 text-foodie-orange" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 mr-3 text-foodie-orange group-hover:scale-110 transition-transform" />
+              <span className="font-medium group-hover:text-foodie-orange transition-colors">{item.label}</span>
             </button>
           ))}
         </nav>
         
         <div className="p-4 border-t border-foodie-gray">
-          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors" onClick={handleLogout}>
+          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:text-red-700 hover:bg-red-50 transition-colors" onClick={handleLogout}>
             <LogOut className="w-5 h-5 mr-3" />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
@@ -99,7 +99,7 @@ const AdminLayout = ({ children, title }) => {
       >
         <div className="p-6 border-b border-foodie-gray flex justify-between items-center">
           <h1 className="text-xl font-bold text-gradient">FoodieVibe</h1>
-          <button onClick={() => setSidebarOpen(false)}>
+          <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-md hover:bg-gray-100 hover:text-foodie-orange transition-colors">
             <X className="w-6 h-6 text-foodie-charcoal" />
           </button>
         </div>
@@ -112,18 +112,18 @@ const AdminLayout = ({ children, title }) => {
                 navigate(item.path);
                 setSidebarOpen(false);
               }}
-              className="flex items-center px-6 py-3 w-full text-left hover:bg-foodie-gray-light transition-colors"
+              className="flex items-center px-6 py-3 w-full text-left text-gray-700 hover:text-foodie-orange hover:bg-orange-50 transition-all group"
             >
-              <item.icon className="w-5 h-5 mr-3 text-foodie-orange" />
-              <span>{item.label}</span>
+              <item.icon className="w-5 h-5 mr-3 text-foodie-orange group-hover:scale-110 transition-transform" />
+              <span className="font-medium group-hover:text-foodie-orange transition-colors">{item.label}</span>
             </button>
           ))}
         </nav>
         
         <div className="p-4 border-t border-foodie-gray">
-          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:bg-foodie-gray-light transition-colors">
+          <button className="flex items-center px-6 py-3 w-full text-left text-foodie-red hover:text-red-700 hover:bg-red-50 transition-colors" onClick={handleLogout}>
             <LogOut className="w-5 h-5 mr-3" />
-            <span>Logout</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </aside>
@@ -135,15 +135,15 @@ const AdminLayout = ({ children, title }) => {
             <div className="flex items-center">
               <button 
                 onClick={() => setSidebarOpen(true)} 
-                className="md:hidden p-2 mr-2 rounded-md text-foodie-charcoal hover:bg-foodie-gray-light"
+                className="md:hidden p-2 mr-2 rounded-md text-foodie-charcoal hover:text-foodie-orange hover:bg-orange-50 transition-colors"
               >
                 <MenuIcon className="w-6 h-6" />
               </button>
               <h1 className="text-xl font-medium text-foodie-charcoal">{title}</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full hover:bg-foodie-gray-light">
-                <User className="w-6 h-6 text-foodie-charcoal" />
+              <button className="p-2 rounded-full hover:bg-orange-50 hover:text-foodie-orange transition-colors">
+                <User className="w-6 h-6 text-foodie-charcoal hover:text-foodie-orange transition-colors" />
               </button>
               <div className="hidden md:block">
               <p className="text-sm font-medium">{restaurantName || 'Loading...'}</p>

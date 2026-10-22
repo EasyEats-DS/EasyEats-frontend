@@ -9,13 +9,13 @@ const FoodieButton = ({
   className, 
   ...props 
 }) => {
-  const baseStyles = "font-medium rounded-full transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center";
+  const baseStyles = "cursor-pointer font-medium rounded-full transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-gradient-to-r from-[#FF7A00] to-[#FF9E00] text-white shadow-md hover:shadow-lg",
-    secondary: "bg-white border-2 border-[#FF7A00] text-[#FF7A00] hover:bg-[#FF7A00]/5",
-    outline: "bg-transparent border-2 border-gray-700 text-gray-800 hover:border-[#FF7A00]",
-    ghost: "bg-transparent text-gray-800 hover:bg-gray-100",
+    primary: "bg-gradient-to-r from-[#FF7A00] to-[#FF9E00] hover:from-[#E66E00] hover:to-[#FF8500] text-white shadow-md hover:shadow-lg",
+    secondary: "bg-white border-2 border-[#FF7A00] text-[#FF7A00] hover:bg-[#FF7A00] hover:text-white",
+    outline: "bg-transparent border-2 border-gray-700 text-gray-800 hover:border-[#FF7A00] hover:text-[#FF7A00] hover:bg-orange-50/50",
+    ghost: "bg-transparent text-gray-800 hover:bg-orange-50 hover:text-[#FF7A00]",
   };
   
   const sizes = {

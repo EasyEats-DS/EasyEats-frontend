@@ -134,7 +134,7 @@ const Login = () => {
                 </label>
               </div>
               <div className="text-sm">
-                <a href="#" className="font-medium text-[#FF7A00] hover:text-[#FF9E00]">
+                <a href="#" className="font-medium text-[#FF7A00] hover:text-[#E06900] hover:underline transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -155,7 +155,7 @@ const Login = () => {
             <button
               type="button"
               onClick={() => navigate('/signup')}
-              className="ml-2 font-medium text-[#FF7A00] hover:text-[#FF9E00]"
+              className="ml-2 font-medium text-[#FF7A00] hover:text-[#E06900] hover:underline transition-colors"
             >
               Sign up
             </button>
@@ -165,7 +165,7 @@ const Login = () => {
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="text-sm font-medium text-gray-500 hover:text-[#FF7A00]"
+              className="text-sm font-medium text-gray-500 hover:text-[#FF7A00] hover:underline transition-colors"
             >
               Restaurant Owner? Sign in to admin
             </button>

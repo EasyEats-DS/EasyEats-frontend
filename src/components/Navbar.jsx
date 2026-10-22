@@ -9,22 +9,22 @@ const Navbar = () => {
         </div>
         <ul className="flex space-x-6">
           <li>
-            <a href="#" className="text-white hover:text-gray-200">
+            <a href="#" className="text-white hover:text-orange-200 transition-colors">
               Home
             </a>
           </li>
           <li>
-            <a href="#" className="text-white hover:text-gray-200">
+            <a href="#" className="text-white hover:text-orange-200 transition-colors">
               About
             </a>
           </li>
           <li>
-            <a href="#" className="text-white hover:text-gray-200">
+            <a href="#" className="text-white hover:text-orange-200 transition-colors">
               Services
             </a>
           </li>
           <li>
-            <a href="#" className="text-white hover:text-gray-200">
+            <a href="#" className="text-white hover:text-orange-200 transition-colors">
               Contact
             </a>
           </li>

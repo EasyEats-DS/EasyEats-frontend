@@ -292,11 +292,11 @@ const Signup = () => {
                 className="ml-2 block text-sm text-gray-600"
               >
                 I agree to the{" "}
-                <a href="#" className="text-[#FF7A00]">
+                <a href="#" className="text-[#FF7A00] hover:text-[#E06900] hover:underline transition-colors">
                   Terms of Service
                 </a>{" "}
                 and{" "}
-                <a href="#" className="text-[#FF7A00]">
+                <a href="#" className="text-[#FF7A00] hover:text-[#E06900] hover:underline transition-colors">
                   Privacy Policy
                 </a>
               </label>
@@ -317,7 +317,7 @@ const Signup = () => {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="ml-2 font-medium text-[#FF7A00] hover:text-[#FF9E00]"
+              className="ml-2 font-medium text-[#FF7A00] hover:text-[#E06900] hover:underline transition-colors"
             >
               Sign in
             </button>

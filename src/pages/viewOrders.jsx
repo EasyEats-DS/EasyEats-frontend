@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getUserFromToken } from '../lib/auth';
 import { fetchOrdersByUserId } from '../lib/api/orders';
 import UserLayout from '../components/UserLayout';
+import { ShoppingBag, ArrowRight } from 'lucide-react';
 
 function ViewOrders() {
+  const navigate = useNavigate();
   const user = getUserFromToken();
   const userId = user?.id;
 
@@ -24,7 +27,17 @@ function ViewOrders() {
         setOrders(fetchedOrders || []);
       } catch (err) {
         console.error("Failed to fetch user orders:", err);
-        setError("Failed to load your orders.");
+        const errorMessage = err.response?.data?.message || err.message || "";
+        // If the error response is 404 or specifically says no orders found, treat as empty list
+        if (
+          err.response?.status === 404 ||
+          errorMessage.toLowerCase().includes("no orders")
+        ) {
+          setOrders([]);
+          setError(null);
+        } else {
+          setError(errorMessage || "Failed to load your orders.");
+        }
       } finally {
         setLoading(false);
       }
@@ -43,9 +56,27 @@ function ViewOrders() {
             <p className="text-gray-500 animate-pulse">Loading your orders...</p>
           </div>
         ) : error ? (
-          <div className="text-center text-red-500 font-semibold">{error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-6 text-center max-w-lg mx-auto">
+            <p className="font-semibold mb-2">Error</p>
+            <p className="text-sm">{error}</p>
+          </div>
         ) : orders.length === 0 ? (
-          <div className="text-center text-gray-500">You have no orders yet.</div>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 sm:p-12 text-center max-w-lg mx-auto flex flex-col items-center">
+            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-5 text-orange-500 shadow-inner">
+              <ShoppingBag className="w-10 h-10" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Orders Found</h2>
+            <p className="text-gray-500 mb-6 text-sm max-w-sm">
+              You haven't placed any orders yet. Discover delicious dishes from our top restaurants and order your favorite meal!
+            </p>
+            <button
+              onClick={() => navigate('/restaurant')}
+              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
+            >
+              <span>Explore Restaurants</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {orders.map((order) => (
