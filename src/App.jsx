@@ -107,8 +107,8 @@ const App = () => {
           <Route path="/driver/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
           <Route path="/customer/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
 
-          <Route path="/" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
-          <Route path="/list" element={<ProtectedRoute><Home/></ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/list" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/restaurant" element={<ProtectedRoute><Resturant /></ProtectedRoute>} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
           <Route path="/order" element={<ProtectedRoute><Order /></ProtectedRoute>} />

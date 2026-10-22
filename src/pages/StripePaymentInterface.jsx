@@ -59,7 +59,7 @@ const StripePaymentInterface = () => {
     cardCvc: false
   });
 
-  const { amount, orderId, orderPayload, userEmail, userPhone } = location.state || {};
+  const { amount, orderId, orderPayload, userEmail: _userEmail, userPhone: _userPhone } = location.state || {};
   const user = getUserFromToken();
   const userId = user?.id;
 
@@ -158,6 +158,7 @@ const StripePaymentInterface = () => {
 
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
+        window.dispatchEvent(new Event("cartUpdated"));
         
         navigate('/orderConfirmed', { 
           state: { 

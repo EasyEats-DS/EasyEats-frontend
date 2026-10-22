@@ -14,15 +14,15 @@ const Order = () => {
 
   const {
     cartItems = [],
-    promotion = 0,
+    promotion: _promotion = 0,
     note = "",
     restaurantId,
   } = location.state || {};
 
-  const [deliveryAddress, setDeliveryAddress] = useState(
+  const [deliveryAddress] = useState(
     "SLIIT Campus, Malabe"
   );
-  const [dropNote, setDropNote] = useState(
+  const [dropNote] = useState(
     "Near Perera and Sons in front of SLIIT"
   );
   const [deliveryType, setDeliveryType] = useState("standard");
@@ -101,6 +101,7 @@ const Order = () => {
         });
         localStorage.removeItem("cartItems");
         localStorage.removeItem("cartRestaurantId");
+        window.dispatchEvent(new Event("cartUpdated"));
         setTimeout(() => {
           navigate("/orderConfirmed");
         }, 1000);

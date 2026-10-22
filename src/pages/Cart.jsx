@@ -22,6 +22,7 @@ const Cart = () => {
     if (cartItems.length === 0) {
       localStorage.removeItem("cartRestaurantId");
     }
+    window.dispatchEvent(new Event("cartUpdated"));
   }, [cartItems]);
 
   const promotion = 15;

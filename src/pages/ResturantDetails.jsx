@@ -25,6 +25,7 @@ const ResturantDetails = () => {
   // whenever cart changes, persist back to localStorage
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
   }, [cart]);
 
   const handleAddToCart = (item) => {

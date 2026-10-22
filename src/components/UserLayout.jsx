@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Home, Search, ShoppingCart, User, Menu, CreditCard } from "lucide-react";
 import Cart from "../pages/Cart";
@@ -7,12 +7,40 @@ const UserLayout = ({ children, title }) => {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  const getCartCount = useCallback(() => {
+    try {
+      const items = JSON.parse(localStorage.getItem("cartItems") || "[]");
+      if (!Array.isArray(items)) return 0;
+      return items.reduce((total, item) => total + (Number(item.quantity) || 1), 0);
+    } catch {
+      return 0;
+    }
+  }, []);
+
+  const [cartCount, setCartCount] = useState(getCartCount);
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      setCartCount(getCartCount());
+    };
+
+    handleCartUpdate();
+
+    window.addEventListener("storage", handleCartUpdate);
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleCartUpdate);
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, [getCartCount, isCartOpen]);
+
   const userType = localStorage.getItem('userType');
   const _user = userType === 'driver' 
     ? JSON.parse(localStorage.getItem('driver'))
     : JSON.parse(localStorage.getItem('Customer'));
 
-    const mapLink = userType? userType === 'driver'
+  const mapLink = userType? userType === 'driver'
     ? "/driver/map"
     : "/customer/map"
     : "/login";
@@ -76,9 +104,11 @@ const UserLayout = ({ children, title }) => {
               title="Cart"
             >
               <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-foodie-orange text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                3
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-foodie-orange text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center shadow-sm">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => navigate("/profile")}
@@ -135,9 +165,11 @@ const UserLayout = ({ children, title }) => {
             className="flex flex-col items-center text-foodie-gray-dark hover:text-foodie-orange transition-colors relative"
           >
             <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-1 right-0 bg-foodie-orange text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              3
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 right-0 bg-foodie-orange text-white text-xs font-bold rounded-full min-w-5 h-5 px-1 flex items-center justify-center shadow-sm">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
             <span className="text-xs mt-1">Cart</span>
           </button>
           <button
