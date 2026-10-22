@@ -16,7 +16,7 @@ const FoodieCard = ({
         className
       )}
       {...props}
-    >
+    >   
       {children}
     </div>
   );
