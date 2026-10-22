@@ -25,6 +25,10 @@ const ResturantDetails = () => {
   // whenever cart changes, persist back to localStorage
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cart));
+    if (cart.length === 0) {
+      localStorage.removeItem("cartRestaurantId");
+      localStorage.removeItem("cartRestaurantName");
+    }
     window.dispatchEvent(new Event("cartUpdated"));
   }, [cart]);
 
@@ -32,11 +36,16 @@ const ResturantDetails = () => {
     const prevRest = localStorage.getItem("cartRestaurantId");
     // if they’re switching restaurants, clear out the old cart
     if (prevRest && prevRest !== id) {
-    // optional: confirm("Switch restaurant? Cart will be cleared.")
-    setCart([]);
-    localStorage.removeItem("cartItems");
-  }
-  localStorage.setItem("cartRestaurantId", id);
+      // optional: confirm("Switch restaurant? Cart will be cleared.")
+      setCart([]);
+      localStorage.removeItem("cartItems");
+      localStorage.removeItem("cartRestaurantName");
+    }
+    const currentRestName = restaurant?.name || restaurant?.restaurantName || "";
+    localStorage.setItem("cartRestaurantId", id);
+    if (currentRestName) {
+      localStorage.setItem("cartRestaurantName", currentRestName);
+    }
 
     const updated = [...cart];
     const idx = updated.findIndex(ci => ci.id === item.id);
@@ -53,6 +62,9 @@ const ResturantDetails = () => {
     }
     setCart(updated);
     localStorage.setItem('cartRestaurantId', id);
+    if (currentRestName) {
+      localStorage.setItem('cartRestaurantName', currentRestName);
+    }
   };
 
   const handleRemoveFromCart = (item) => {

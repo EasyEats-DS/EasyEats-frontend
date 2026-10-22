@@ -36,6 +36,25 @@ const UserLayout = ({ children, title }) => {
     };
   }, [getCartCount, isCartOpen]);
 
+  // Lock body scroll and close on Escape key when cart drawer is open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+          setIsCartOpen(false);
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [isCartOpen]);
+
   const userType = localStorage.getItem('userType');
   const _user = userType === 'driver' 
     ? JSON.parse(localStorage.getItem('driver'))
@@ -133,29 +152,31 @@ const UserLayout = ({ children, title }) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow container max-w-6xl mx-auto px-4 py-6">
+      <main className="flex-grow container max-w-6xl mx-auto px-4 py-6 pb-28 lg:pb-8">
         {children}
       </main>
 
-      {/* Cart Sidebar */}
+      {/* Cart Drawer Backdrop */}
       <div
-        className={`fixed top-0 right-0 w-100 h-full bg-white shadow-lg z-50 overflow-y-auto transition-transform duration-300 transform ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-[2px] z-50 transition-opacity duration-300 ${
+          isCartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsCartOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Cart Drawer Sidebar */}
+      <aside
+        className={`fixed top-0 right-0 w-full sm:w-[440px] md:w-[480px] h-screen h-[100dvh] bg-white shadow-2xl z-50 transition-transform duration-300 ease-in-out flex flex-col ${
           isCartOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        aria-label="Shopping Cart Drawer"
       >
-        <div className="flex justify-end p-4">
-          <button
-            onClick={() => setIsCartOpen(false)}
-            className="text-gray-600 hover:text-gray-900 text-2xl"
-          >
-            ×
-          </button>
-        </div>
-        <Cart /> 
-      </div>
+        <Cart isDrawer={true} onClose={() => setIsCartOpen(false)} />
+      </aside>
 
-      {/* Mobile Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-10">
+      {/* Mobile Navigation - Only visible on mobile/tablets (< lg) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20 lg:hidden">
         <div className="flex justify-around py-3">
           <button
             onClick={() => navigate("/")}
