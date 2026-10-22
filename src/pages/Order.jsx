@@ -26,7 +26,7 @@ const Order = () => {
     "Near Perera and Sons in front of SLIIT"
   );
   const [deliveryType, setDeliveryType] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentMethod, setPaymentMethod] = useState("card");
   const [submitting, setSubmitting] = useState(false);
 
   const subtotal = cartItems.reduce(
@@ -53,6 +53,9 @@ const Order = () => {
       const orderNumber = Math.floor(100 + Math.random() * 900);
       const orderId = `ORD-${orderNumber}`;
 
+      const userEmail = user?.email || "dushanbolonghe@gmail.com";
+      const userPhone = user?.phoneNumber || user?.phone || "+94701615834";
+
       // Create order payload with orderId
       const orderPayload = {
         orderId,
@@ -60,11 +63,11 @@ const Order = () => {
         restaurantId: restaurantId || "test-restaurant",
         products:
           cartItems?.map((item) => ({
-            productId: item.id || "test-product",
+            productId: item.id || item._id || "test-product",
             quantity: item.quantity || 1,
             price: item.price || 0,
           })) || [],
-        deliveryAddress: deliveryAddress || "Test Address",
+        deliveryAddress: deliveryAddress || "SLIIT Campus, Malabe",
         dropNote: dropNote || "",
         deliveryType: deliveryType || "standard",
         paymentMethod,
@@ -81,13 +84,13 @@ const Order = () => {
           await sendOrderConfirmation({
             orderId: orderId, // Use the ORD-123 format directly
             userId,
-            customerEmail: "dushanbolonghe@gmail.com",
-            customerPhone: "+94701615834",
+            customerEmail: userEmail,
+            customerPhone: userPhone,
             totalAmount: total,
             metadata: {
-              email: "dushanbolonghe@gmail.com",
+              email: userEmail,
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834",
+              phone: userPhone,
             },
           });
         } catch (notifError) {
@@ -103,7 +106,7 @@ const Order = () => {
         localStorage.removeItem("cartRestaurantId");
         window.dispatchEvent(new Event("cartUpdated"));
         setTimeout(() => {
-          navigate("/orderConfirmed");
+          navigate("/orderConfirmed", { state: { orderId } });
         }, 1000);
       } else {
         // Show toast notification for card payment
@@ -117,9 +120,12 @@ const Order = () => {
           state: {
             amount: total || 0,
             orderId,
-            orderPayload,
-            userEmail: "dushanbolonghe@gmail.com",
-            userPhone: "+94701615834",
+            orderPayload: {
+              ...orderPayload,
+              paymentMethod: "card"
+            },
+            userEmail,
+            userPhone,
           },
           replace: true,
         });
@@ -192,15 +198,58 @@ const Order = () => {
           </div>
 
           <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">
-              Payment Method
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Payment Method
+              </h2>
+              <span className="text-xs px-2.5 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded-full flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Stripe Sandbox Active
+              </span>
+            </div>
+            
             <div className="space-y-4">
               <label
-                className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+                className={`flex flex-col p-4 border rounded-xl cursor-pointer transition-all duration-300 ${
+                  paymentMethod === "card"
+                    ? "border-orange-500 bg-orange-50/80 shadow-sm"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === "card"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="accent-orange-500 w-5 h-5 cursor-pointer"
+                    />
+                    <div>
+                      <span className="font-semibold text-gray-800 flex items-center gap-2">
+                        💳 Card Payment (Stripe)
+                        <span className="text-[11px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">Recommended</span>
+                      </span>
+                      <p className="text-xs text-gray-500 mt-0.5">Pay securely with Stripe Payment Gateway</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-medium text-gray-400">VISA / MC</span>
+                </div>
+                {paymentMethod === "card" && (
+                  <div className="mt-3 pt-3 border-t border-orange-200/60 text-xs text-orange-950 flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-orange-800">Sandbox Test Card:</span>
+                    <code className="bg-white px-2 py-0.5 rounded border border-orange-300 font-mono text-orange-700 font-bold">4242 4242 4242 4242</code>
+                    <span className="text-gray-500">Exp: Any future MM/YY • CVC: 123</span>
+                  </div>
+                )}
+              </label>
+
+              <label
+                className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all duration-300 ${
                   paymentMethod === "cash"
-                    ? "border-orange-500 bg-orange-50"
-                    : "border-gray-300"
+                    ? "border-orange-500 bg-orange-50/80 shadow-sm"
+                    : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -210,40 +259,15 @@ const Order = () => {
                     value="cash"
                     checked={paymentMethod === "cash"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="accent-orange-500 w-5 h-5"
+                    className="accent-orange-500 w-5 h-5 cursor-pointer"
                   />
-                  <span className="font-medium text-gray-700">
-                    Cash on Delivery
-                  </span>
+                  <div>
+                    <span className="font-semibold text-gray-800">
+                      💵 Cash on Delivery
+                    </span>
+                    <p className="text-xs text-gray-500 mt-0.5">Pay in cash when your food arrives</p>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500">
-                  Pay in cash when food arrives
-                </span>
-              </label>
-
-              <label
-                className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
-                  paymentMethod === "card"
-                    ? "border-orange-500 bg-orange-50"
-                    : "border-gray-300"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="card"
-                    checked={paymentMethod === "card"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="accent-orange-500 w-5 h-5"
-                  />
-                  <span className="font-medium text-gray-700">
-                    Card Payment
-                  </span>
-                </div>
-                <span className="text-sm text-gray-500">
-                  Pay securely with your card
-                </span>
               </label>
             </div>
           </div>
@@ -294,10 +318,16 @@ const Order = () => {
             onClick={handlePlaceOrder}
             disabled={submitting}
             className={`w-full mt-6 ${
-              submitting ? "bg-orange-300" : "bg-orange-500 hover:bg-orange-400"
-            } text-white py-4 rounded-xl font-bold text-lg transform hover:scale-105 transition-all duration-300`}
+              submitting ? "bg-orange-300" : "bg-orange-500 hover:bg-orange-600 active:bg-orange-700 cursor-pointer"
+            } text-white py-4 rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2`}
           >
-            {submitting ? "Placing order…" : "Place Order"}
+            {submitting ? (
+              <span>Placing order…</span>
+            ) : paymentMethod === "card" ? (
+              <span>Proceed to Stripe Payment • USD {total.toFixed(2)}</span>
+            ) : (
+              <span>Place Cash Order • USD {total.toFixed(2)}</span>
+            )}
           </button>
         </div>
       </div>

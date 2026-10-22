@@ -13,5 +13,6 @@ export default function handleLoginSuccess(user) {
       localStorage.removeItem('driver'); // Cleanup if switching roles
       //navigate('/customer/map');
     }
+    window.dispatchEvent(new Event('authChanged'));
   }
   

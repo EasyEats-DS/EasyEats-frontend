@@ -7,6 +7,7 @@ import './DeliveryTrackingPage.css';
 //import useDriversSocket from '../../components/banuka/hooks/useDriversSocket';
 import { useSocket } from '../../components/banuka/SocketContext';
 import UserLayout from '../../components/UserLayout';
+import DriverLayout from '../../components/DriverLayout';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
@@ -168,8 +169,10 @@ const DeliveryTrackingPage = ({ userRole }) => {
     </div>
   );
 
+  const LayoutWrapper = userRole === 'driver' ? DriverLayout : UserLayout;
+
   return (
-    <UserLayout title={"EasyEats - Delivery Tracking"}>
+    <LayoutWrapper title={userRole === 'driver' ? "Live GPS & Navigation Map" : "EasyEats - Delivery Tracking"}>
     <div className="delivery-tracking-container">
       <div className="map-container">
         <MapComponent 
@@ -194,7 +197,7 @@ const DeliveryTrackingPage = ({ userRole }) => {
         />
       </div>
     </div>
-    </UserLayout>
+    </LayoutWrapper>
   );
 };
 

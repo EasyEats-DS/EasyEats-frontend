@@ -4,7 +4,7 @@ import {
   Home, Settings, ShoppingCart, Menu as MenuIcon, 
   User, X, CreditCard, Package, LogOut
 } from 'lucide-react';
-import { getUserFromToken } from '../lib/auth';
+import { getUserFromToken, clearAuthSession } from '../lib/auth';
 import {restaurantService} from '../lib/api/resturants';
 
 const AdminLayout = ({ children, title }) => {
@@ -46,12 +46,7 @@ const AdminLayout = ({ children, title }) => {
   ];
 
   const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
+    clearAuthSession();
     navigate("/login");
   };
 

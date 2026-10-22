@@ -72,14 +72,35 @@ export default function useDriversSocket() {
 
     socketRef.current = socket; // 💾 Store it in the ref
 
+    const identifySocket = (targetSocket) => {
+      const sock = targetSocket || socketRef.current;
+      if (!sock || !sock.connected) return;
+      const type = localStorage.getItem('userType');
+      const user = type === 'driver'
+        ? JSON.parse(localStorage.getItem('driver') || 'null')
+        : JSON.parse(localStorage.getItem('Customer') || 'null');
+      
+      if (type && user?._id) {
+        console.log('useDriversSocket: identifying as', type, user._id);
+        sock.emit('identify', { role: type, id: user._id });
+      }
+    };
+
     // Connection events
     socket.on('connect', () => {
       setIsConnected(true);
       console.log('Connected to WebSocket server');
     
       socket.emit('map:init');
-      socket.emit('identify', { role: userType, id: loggedInDriver?._id });
+      identifySocket(socket);
     });
+
+    const handleAuthChange = () => {
+      console.log('Auth change detected, re-identifying socket...');
+      identifySocket(socket);
+    };
+    window.addEventListener('authChanged', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
 
     socket.on('disconnect', () => {
       setIsConnected(false);
@@ -197,26 +218,56 @@ export default function useDriversSocket() {
       setError(err);
     });
 
-    const driver = { ...loggedInDriver };
     socket.on('new_order', async(order) => {
       console.log("New order received:", order);
-      console.log("r_:", order.restaurant?.position.coordinates[0]);
-      console.log("c_", order.customer?.position.coordinates);
-      const pickupLat = order.restaurant?.position.coordinates[0];
-      const pickupLng = order.restaurant?.position.coordinates[1];
-      const dropoffLat = order.customer?.position.coordinates[0];
-      const dropoffLng = order.customer?.position.coordinates[1];
-      console.log("Pickup coordinates:", pickupLat, pickupLng);
-      console.log("Dropoff coordinates:", dropoffLat, dropoffLng);
+      
+      // CRITICAL: Only active drivers should receive and see new delivery requests!
+      const currentRole = localStorage.getItem('userType');
+      if (currentRole !== 'driver') {
+        console.log("Ignoring new_order event: current user is not a driver:", currentRole);
+        return;
+      }
 
-      const pickupCity = await getCityName(pickupLat, pickupLng);
-      const dropoffCity = await getCityName(dropoffLat, dropoffLng);
+      const activeDriver = JSON.parse(localStorage.getItem('driver') || 'null');
+      if (!activeDriver || !activeDriver._id) {
+        console.log("Ignoring new_order event: driver profile not found in storage");
+        return;
+      }
 
-      console.log("Pickup city:", pickupCity);
-      console.log("Dropoff city:", dropoffCity);
-      console.log("111111111")
-      //alert("New delivery request from " + order.customer.fullName + " at " + order.restaurant.name);
-     
+      // Do NOT notify if the order was placed by this user
+      const orderCusId = (order.userId || order.customer?._id || '').toString();
+      if (orderCusId && orderCusId === activeDriver._id.toString()) {
+        console.log("Ignoring new_order: driver is same as ordering customer");
+        return;
+      }
+
+      const pickupLat = order.restaurant?.position?.coordinates?.[0];
+      const pickupLng = order.restaurant?.position?.coordinates?.[1];
+      const dropoffLat = order.customer?.position?.coordinates?.[0];
+      const dropoffLng = order.customer?.position?.coordinates?.[1];
+
+      let pickupCity = '';
+      let dropoffCity = '';
+      try {
+        if (pickupLat && pickupLng) {
+          pickupCity = await getCityName(pickupLat, pickupLng);
+        }
+        if (dropoffLat && dropoffLng) {
+          dropoffCity = await getCityName(dropoffLat, dropoffLng);
+        }
+      } catch (geoErr) {
+        console.warn('Geocoding lookup warning:', geoErr);
+      }
+
+      const dropoffDisplay = order.deliveryAddress 
+        || (dropoffCity && dropoffCity !== 'Unknown location' ? dropoffCity : '') 
+        || order.customer?.address?.street 
+        || 'Delivery Location';
+
+      const customerDisplayName = order.customer?.firstName 
+        ? `${order.customer.firstName} ${order.customer.lastName || ''}`.trim()
+        : 'Customer';
+
       toast.info(
         <div style={{
           fontFamily: 'Inter, sans-serif',
@@ -225,25 +276,32 @@ export default function useDriversSocket() {
           padding: '10px 5px',
         }}>
           <p style={{ margin: '0 0 6px 0', fontWeight: 600 }}>
-            New delivery request from <span style={{ color: '#00c569' }}>{order.customer.firstName +" "+order.customer.lastName }</span>
+            New delivery request from <span style={{ color: '#00c569' }}>{customerDisplayName}</span>
           </p>
-          <p style={{ margin: '4px 0' }}> <strong>Pick-up:</strong> {order.restaurant.name}, {pickupCity}</p>
-          <p style={{ margin: '4px 0' }}> <strong>Drop-off:</strong> {dropoffCity}</p>
+          <p style={{ margin: '4px 0' }}> <strong>Pick-up:</strong> {order.restaurant?.name || 'Restaurant'}{pickupCity && pickupCity !== 'Unknown location' ? `, ${pickupCity}` : ''}</p>
+          <p style={{ margin: '4px 0' }}> <strong>Drop-off:</strong> {dropoffDisplay}</p>
+          <p style={{ margin: '4px 0', fontSize: '13px', color: '#555' }}>
+            <strong>Total:</strong> USD {Number(order.totalAmount || 0).toFixed(2)} ({order.paymentMethod === 'card' ? '💳 Paid Online (Stripe)' : '💵 Cash on Delivery'})
+          </p>
       
-          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
             <button
               onClick={() => {
-                socket.emit('accept_order', { driver, order });
+                const freshDriver = JSON.parse(localStorage.getItem('driver') || '{}');
+                socket.emit('accept_order', { driver: freshDriver, order });
                 toast.dismiss();
+                toast.success("Order accepted! Delivery assigned to you.");
+                window.dispatchEvent(new Event('driverOrderAccepted'));
               }}
               style={{
-                padding: '6px 14px',
+                padding: '7px 16px',
                 backgroundColor: '#00c569',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '13px',
+                fontWeight: 600
               }}
             >
               Accept
@@ -251,7 +309,7 @@ export default function useDriversSocket() {
             <button
               onClick={() => toast.dismiss()}
               style={{
-                padding: '6px 14px',
+                padding: '7px 16px',
                 backgroundColor: '#f5f5f5',
                 color: '#333',
                 border: '1px solid #ddd',
@@ -264,8 +322,13 @@ export default function useDriversSocket() {
             </button>
           </div>
         </div>,
-        { autoClose: true } // 🔥 Maybe set autoClose: false to allow user interaction
+        { autoClose: false, closeOnClick: false }
       );
+    });
+
+    socket.on('order_assigned_driver', ({ order }) => {
+      console.log("Order assigned to this driver via socket:", order);
+      window.dispatchEvent(new Event('driverOrderAccepted'));
     });
 
     socket.on('order_assigned', ({ name, order }) => {
@@ -320,6 +383,8 @@ export default function useDriversSocket() {
 
     // Cleanup
     return () => {
+      window.removeEventListener('authChanged', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
       socket.off('connect');
       socket.off('disconnect');
       socket.off('map:init');
@@ -327,10 +392,11 @@ export default function useDriversSocket() {
       socket.off('error');
       socket.off('new_order');
       socket.off('order_assigned');
+      socket.off('order_assigned_driver');
       socket.off('customer_location');
       socket.off('identify');
       socket.off('live_location');
-      socket.off('status_update')
+      socket.off('status_update');
       socketRef.current = null; // Clear the ref
       socket.disconnect();
     };

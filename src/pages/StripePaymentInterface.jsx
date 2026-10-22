@@ -107,15 +107,12 @@ const StripePaymentInterface = () => {
     setError(null);
 
     try {
-      // First create the order
-      await createOrder(orderPayload);
-
-      // Then handle the payment
+      // First handle the Stripe payment
       const { clientSecret } = await paymentService.createPaymentIntent({
-        amount: Math.round(amount * 100),
+        amount: Number(amount),
         orderId,
         userId,
-        currency: 'LKR',
+        currency: 'usd',
         paymentMethod: 'CARD'
       });
 
@@ -136,18 +133,32 @@ const StripePaymentInterface = () => {
       }
 
       if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+        // Create order in DB and trigger delivery Kafka event after payment succeeds
+        try {
+          if (orderPayload) {
+            await createOrder({
+              ...orderPayload,
+              paymentMethod: 'card',
+              orderId,
+            });
+          }
+        } catch (orderErr) {
+          console.error("Failed to persist order after payment:", orderErr);
+        }
         try {
           // Send notification after successful payment
+          const userEmail = _userEmail || user?.email || "customer@example.com";
+          const userPhone = _userPhone || user?.phoneNumber || user?.phone || "+94701615834";
           await sendOrderConfirmation({
-            orderId: orderId.substring(0, 7),
+            orderId: orderId,
             userId,
-            customerEmail: "dushanbolonghe@gmail.com",
-            customerPhone: "+94701615834",
+            customerEmail: userEmail,
+            customerPhone: userPhone,
             totalAmount: amount,
             metadata: {
-              email: "dushanbolonghe@gmail.com",
+              email: userEmail,
               subject: "Order Confirmation - EasyEats",
-              phone: "+94701615834",
+              phone: userPhone,
               paymentId: result.paymentIntent.id,
               paymentStatus: "SUCCESS"
             }
@@ -188,6 +199,29 @@ const StripePaymentInterface = () => {
             <p className="text-white/80 text-sm mt-1">Enter your card details below</p>
           </div>
           <div className="p-6">
+            {/* Sandbox Helper Banner */}
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Stripe Sandbox (Test Mode)</span>
+              </div>
+              <p className="text-xs text-emerald-900 font-medium">Use Stripe test card credentials to simulate payment:</p>
+              <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div className="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-xs">
+                  <span className="text-gray-500 block text-[10px] font-medium">CARD NUMBER</span>
+                  <span className="font-mono font-bold text-emerald-700">4242 •••• •••• 4242</span>
+                </div>
+                <div className="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-xs">
+                  <span className="text-gray-500 block text-[10px] font-medium">EXPIRY</span>
+                  <span className="font-mono font-bold text-emerald-700">Any future MM/YY</span>
+                </div>
+                <div className="bg-white p-2.5 rounded-lg border border-emerald-200 shadow-xs">
+                  <span className="text-gray-500 block text-[10px] font-medium">CVC</span>
+                  <span className="font-mono font-bold text-emerald-700">Any 3 digits (123)</span>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div>
@@ -239,10 +273,10 @@ const StripePaymentInterface = () => {
                 </div>
               )}
 
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Amount to pay:</span>
-                  <span className="font-semibold">LKR {amount?.toFixed(2) || '0.00'}</span>
+              <div className="bg-orange-50/70 border border-orange-100 rounded-xl p-4">
+                <div className="flex justify-between items-center text-sm text-gray-700">
+                  <span className="font-medium">Amount to pay (USD):</span>
+                  <span className="font-bold text-lg text-gray-900">USD {Number(amount || 0).toFixed(2)}</span>
                 </div>
               </div>
 

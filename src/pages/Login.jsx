@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, ChevronRight } from 'lucide-react';
 import FoodieButton from '../components/FoodieButton';
 import FoodieInput from '../components/FoodieInput';
@@ -8,35 +8,38 @@ import CryptoJS from 'crypto-js'; // Add this import
 import { toast } from 'react-toastify';
 
 import handleLoginSuccess from '../utils/handleLoginSuccess';
+import { updateLastActiveTime } from '../lib/auth';
 
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  // console.log(BASE_URL);
 
-  // const hashPassword = (password) => {
-  //   // Using SHA-256 hashing algorithm
-  //   // You can add a salt if needed: CryptoJS.SHA256(password + salt).toString()
-  //   return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-  // };
-
+  useEffect(() => {
+    if (location.state?.sessionExpired) {
+      toast.warn("Your session has expired. Please log in again.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      // Clear location state so message does not repeat
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
   
     try {
-      // const hashedPassword = hashPassword(password);
       const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
-
 
       console.log("Login successful:", response.data.data);
       toast.success("Login successful!", {
@@ -50,6 +53,7 @@ const Login = () => {
       if (token) {
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user)); // Store user data including role
+        localStorage.setItem("lastActiveTime", Date.now().toString());
       }
   
       // Redirect based on user role
@@ -74,8 +78,11 @@ const Login = () => {
       else if (user.role === "SUPER_ADMIN") {
         navigate("/superadmin/dashboard"); // Redirect to Super Admin dashboard
       }
+      else if (user.role === "DELIVERY_PERSON") {
+        navigate("/driver/dashboard"); // Redirect to Driver Portal dashboard
+      }
       else {
-        // Default redirect for other roles
+        // Default redirect for regular customer
         navigate("/");
       }
     } catch (err) {

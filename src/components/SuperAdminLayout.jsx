@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Settings, UserCog, Building, 
   Users, Database, Server, Shield, X, LogOut,FileText 
 } from 'lucide-react';
+import { clearAuthSession } from '../lib/auth';
 
 const SuperAdminLayout = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,12 +13,7 @@ const SuperAdminLayout = ({ children, title }) => {
 
 
   const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
+    clearAuthSession();
     navigate("/login");
   };
 

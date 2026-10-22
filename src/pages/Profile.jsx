@@ -18,7 +18,7 @@ import FoodieInput from "../components/FoodieInput";
 import FoodieButton from "../components/FoodieButton";
 import { userService } from "../lib/api/users";
 import Avatar from 'boring-avatars';
-import {getUserFromToken} from "../lib/auth";
+import { getUserFromToken, clearAuthSession } from "../lib/auth";
 import { toast } from "react-toastify";
 
 const Profile = () => {
@@ -139,12 +139,8 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    // Remove auth data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    sessionStorage.clear();
-
-    // Redirect to login page
+    clearAuthSession();
+    toast.info("Logged out successfully.", { autoClose: 2000 });
     navigate("/login");
   };
 

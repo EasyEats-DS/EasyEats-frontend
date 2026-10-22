@@ -30,14 +30,20 @@ const OrderConfirmed = () => {
       {/* Buttons */}
       <div className="flex flex-col md:flex-row gap-4">
         <Link
+          to="/customer/map"
+          className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-green-500 shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          <span>📍</span> Track Live Delivery
+        </Link>
+        <Link
           to="/viewOrder"
-          className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-orange-400 transition-all"
+          className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-orange-400 transition-all flex items-center justify-center"
         >
           View My Orders
         </Link>
         <Link
           to="/"
-          className="bg-white border border-orange-500 text-orange-500 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-orange-100 transition-all"
+          className="bg-white border border-orange-500 text-orange-500 px-8 py-3 rounded-lg font-semibold text-lg hover:bg-orange-100 transition-all flex items-center justify-center"
         >
           Back to Home
         </Link>

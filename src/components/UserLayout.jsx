@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Search, ShoppingCart, User, Menu, CreditCard } from "lucide-react";
+import { Home, Search, ShoppingCart, User, Menu, CreditCard, LogOut } from "lucide-react";
 import Cart from "../pages/Cart";
+import { clearAuthSession } from "../lib/auth";
 
 const UserLayout = ({ children, title }) => {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ const UserLayout = ({ children, title }) => {
               onClick={() => navigate(mapLink)}
               className="text-foodie-charcoal hover:text-foodie-orange font-medium px-2 py-1 rounded-md hover:bg-orange-50 transition-colors"
             >
-              Map
+              Track Order
             </button>
 
           </div>
@@ -116,6 +117,16 @@ const UserLayout = ({ children, title }) => {
               title="Profile"
             >
               <User className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => {
+                clearAuthSession();
+                navigate("/login");
+              }}
+              className="p-2 text-foodie-charcoal hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>

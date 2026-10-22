@@ -42,7 +42,14 @@ import { SocketProvider } from '../src/components/banuka/SocketContext.jsx' // A
 //banuka
 import DeliveryTrackingPage from "./pages/banuka/DeliveryTrackingPage";
 
+// Driver Platform Pages
+import DriverDashboard from "./pages/driver/DriverDashboard";
+import DriverOrders from "./pages/driver/DriverOrders";
+import DriverEarnings from "./pages/driver/DriverEarnings";
+import DriverProfile from "./pages/driver/DriverProfile";
+
 import StripePaymentInterface from "./pages/StripePaymentInterface";
+import SessionManager from "./components/SessionManager";
 
 // Initialize Stripe with options
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -83,6 +90,7 @@ const App = () => {
   return (
     <SocketProvider>
     <BrowserRouter>
+      <SessionManager />
       <Elements stripe={stripePromise} options={stripeOptions}>
     <ToastContainer
           position="top-right"
@@ -103,8 +111,15 @@ const App = () => {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
 
-          {/* Protected Routes */}
-          <Route path="/driver/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="driver" /> </ProtectedRoute>} />
+          {/* Driver Portal Routes */}
+          <Route path="/driver/dashboard" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DriverDashboard /></ProtectedRoute>} />
+          <Route path="/driver/orders" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DriverOrders /></ProtectedRoute>} />
+          <Route path="/driver/earnings" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DriverEarnings /></ProtectedRoute>} />
+          <Route path="/driver/profile" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DriverProfile /></ProtectedRoute>} />
+          <Route path="/driver/map" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DeliveryTrackingPage userRole="driver" /></ProtectedRoute>} />
+          <Route path="/driver" element={<ProtectedRoute allowedRoles={['DELIVERY_PERSON']}><DriverDashboard /></ProtectedRoute>} />
+
+          {/* Customer Routes */}
           <Route path="/customer/map" element={<ProtectedRoute><DeliveryTrackingPage userRole="customer" /></ProtectedRoute>} />
 
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
